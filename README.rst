@@ -1,3 +1,5 @@
+This is the master branch, which is unused.
+
 ##################
 frontend-app-authn
 ##################
