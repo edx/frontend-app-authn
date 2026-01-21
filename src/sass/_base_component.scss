@@ -198,7 +198,6 @@
   border: 3px solid var(--pgn-color-accent-b);
   transform: rotate(102.02deg);
 }
-
 .auth-hero-left {
   padding-left: 3.5rem;
   padding-right: 3.5rem;
@@ -237,17 +236,12 @@
 
 /* yellow slanted line */
 .auth-hero-slash {
-  width: 191px;
-  height: 250px;
-  flex-shrink: 1; // tune this to match logo/heading height
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  svg {
-    width: 100%;
-    height: 100%;
-  }
+  width: 0;                       // only height+border matters
+  height: 110px;                  // tune this to match logo/heading height
+  border-left: 6px solid #F0CC00; // Figma yellow
+  border-radius: 999px;
+  transform: skewX(-12deg);       // gives that forward slash look
+  transform-origin: center;
 }
 
 /* heading text: "Start learning" + "with edX" */

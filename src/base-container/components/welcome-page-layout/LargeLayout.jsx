@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 
 import { getConfig } from '@edx/frontend-platform';
@@ -8,7 +9,8 @@ import classNames from 'classnames';
 
 import messages from './messages';
 
-const LargeLayout = () => {
+
+const LargeLayout = ({ fullName = null }) => {
   const { formatMessage } = useIntl();
 
   const enterpriseBranding = useSelector(
@@ -18,7 +20,8 @@ const LargeLayout = () => {
   const enterpriseLogoUrl = enterpriseBranding?.enterpriseLogoUrl || null;
   const enterpriseName = enterpriseBranding?.enterpriseName || null;
 
-  const enterpriseWelcomeHtml = enterpriseBranding?.enterpriseBrandedWelcomeString
+  const enterpriseWelcomeHtml =
+    enterpriseBranding?.enterpriseBrandedWelcomeString
     || enterpriseBranding?.platformWelcomeString
     || '';
 
@@ -50,12 +53,8 @@ const LargeLayout = () => {
                 />
               </div>
             )}
-
-            <div className="auth-hero-slash" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="191" height="250" viewBox="0 0 191 250" fill="none" style={{ width: '100%', height: '100%' }}>
-                <line x1="69.8107" y1="33.833" x2="32.9503" y2="206.952" stroke="#F0CC00" strokeWidth="8" />
-              </svg>
-            </div>
+ 
+            <div className="auth-hero-slash mr-4" aria-hidden="true" />
 
             <div className="auth-hero-heading">
               <div
@@ -94,6 +93,10 @@ const LargeLayout = () => {
       </div>
     </div>
   );
+};
+
+LargeLayout.propTypes = {
+  fullName: PropTypes.string,
 };
 
 export default LargeLayout;

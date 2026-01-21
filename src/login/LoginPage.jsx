@@ -24,7 +24,7 @@ import { getThirdPartyAuthContext } from '../common-components/data/actions';
 import { thirdPartyAuthContextSelector } from '../common-components/data/selectors';
 import EnterpriseSSO from '../common-components/EnterpriseSSO';
 import ThirdPartyAuth from '../common-components/ThirdPartyAuth';
-import { APP_NAME, PENDING_STATE, RESET_PAGE } from '../data/constants';
+import { PENDING_STATE, RESET_PAGE } from '../data/constants';
 import {
   getActivationStatus,
   getAllPossibleQueryParams,
@@ -38,18 +38,13 @@ import { INVALID_FORM, TPA_AUTHENTICATION_FAILURE } from './data/constants';
 import LoginFailureMessage from './LoginFailure';
 import messages from './messages';
 
-const DEFAULT_LOGIN_FORM = {
-  formFields: { emailOrUsername: '', password: '' },
-  errors: { emailOrUsername: '', password: '' },
-};
-
 const LoginPage = ({
   institutionLogin,
   handleInstitutionLogin,
 }) => {
   const dispatch = useDispatch();
   const backupFormState = useCallback((data) => dispatch(backupLoginFormBegin(data)), [dispatch]);
-  const getTPADataFromBackend = useCallback(
+   const getTPADataFromBackend = useCallback(
     (urlParams) => dispatch(getThirdPartyAuthContext(urlParams)),
     [dispatch],
   );
@@ -86,22 +81,17 @@ const LoginPage = ({
   const activationMsgType = getActivationStatus();
   const queryParams = useMemo(() => getAllPossibleQueryParams(), []);
 
+  const [formFields, setFormFields] = useState({ ...backedUpFormData.formFields });
   const [errorCode, setErrorCode] = useState({
     type: '',
     count: 0,
     context: {},
   });
-  const backedUp = backedUpFormData || DEFAULT_LOGIN_FORM;
-
-  // 2) Normalize base URL for redirects (prevents undefined href in tests)
-  const LMS_BASE = getConfig().LMS_BASE_URL || getConfig().BASE_URL || '';
-
-  const [formFields, setFormFields] = useState({ ...backedUp.formFields });
-  const [errors, setErrors] = useState({ ...backedUp.errors });
+  const [errors, setErrors] = useState({ ...backedUpFormData.errors });
   const tpaHint = getTpaHint();
 
   useEffect(() => {
-    sendPageEvent('login_and_registration', 'login', { app_name: APP_NAME });
+    sendPageEvent('login_and_registration', 'login');
   }, []);
 
   useEffect(() => {
@@ -210,7 +200,7 @@ const LoginPage = ({
     }));
   };
   const trackForgotPasswordLinkClick = () => {
-    sendTrackEvent('edx.bi.password-reset_form.toggled', { category: 'user-engagement', app_name: APP_NAME });
+    sendTrackEvent('edx.bi.password-reset_form.toggled', { category: 'user-engagement' });
   };
 
   const {
