@@ -81,50 +81,9 @@ export const isHostAvailableInQueryParams = () => {
   const queryParams = getAllPossibleQueryParams();
   return 'host' in queryParams;
 };
-/**
- * Constructs the enterprise redirect URL with slug
- * @param {string} enterpriseSlug - Enterprise customer slug
- * @param {string} baseUrl - Base URL for enterprise portal (default: enterprise.edx.org)
- * @returns {string|null} - Formatted enterprise portal URL or null if slug is missing
- */
-export const getEnterpriseRedirectUrl = (enterpriseSlug, baseUrl = 'https://enterprise.edx.org') => {
-  if (!enterpriseSlug) {
-    return null;
-  }
-  return `${baseUrl}/${enterpriseSlug}`;
-};
 
-/**
- * Updates query params to include enterprise slug in next parameter if enterprise branding is present
- * @param {object} queryParams - Current query parameters
- * @param {string} enterpriseSlug - Enterprise customer slug
- * @returns {object} - Updated query parameters with next URL including slug
- */
-export const addEnterpriseSlugToNext = (queryParams, enterpriseSlug) => {
-  if (!enterpriseSlug) {
-    return queryParams;
-  }
-
-  const enterpriseUrl = getEnterpriseRedirectUrl(enterpriseSlug);
-  const updatedParams = { ...queryParams };
-
-  if (!updatedParams.next && enterpriseUrl) {
-    updatedParams.next = enterpriseUrl;
-  }
-
-  return updatedParams;
-};
-
-export const redirectWithDelay = (url, delay = 1000) => {
-  if (!url) {
-    return;
-  }
-
-  window.setTimeout(() => {
-    if (window.location && typeof window.location.assign === 'function') {
-      window.location.assign(url);
-    } else {
-      window.location.href = url;
-    }
-  }, delay);
+export const redirectWithDelay = (redirectUrl) => {
+  setTimeout(() => {
+    window.location.href = redirectUrl;
+  }, 1000);
 };

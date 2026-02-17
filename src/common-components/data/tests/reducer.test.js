@@ -16,7 +16,6 @@ describe('common components reducer', () => {
         secondaryProviders: [],
         pipelineUserDetails: null,
         errorMessage: null,
-        enterpriseBranding: null,
       },
     };
     const fieldDescriptions = {

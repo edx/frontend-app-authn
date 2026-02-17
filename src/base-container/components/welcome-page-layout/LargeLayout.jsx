@@ -1,92 +1,38 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 
 import { getConfig } from '@edx/frontend-platform';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Hyperlink, Image } from '@openedx/paragon';
-import classNames from 'classnames';
+import PropTypes from 'prop-types';
 
 import messages from './messages';
 
-const LargeLayout = () => {
+const LargeLayout = ({ fullName }) => {
   const { formatMessage } = useIntl();
-
-  const enterpriseBranding = useSelector(
-    state => state.commonComponents?.thirdPartyAuthContext?.enterpriseBranding,
-  );
-
-  const enterpriseLogoUrl = enterpriseBranding?.enterpriseLogoUrl || null;
-  const enterpriseName = enterpriseBranding?.enterpriseName || null;
-
-  const enterpriseWelcomeHtml = enterpriseBranding?.enterpriseBrandedWelcomeString
-    || enterpriseBranding?.platformWelcomeString
-    || '';
-
-  const siteName = getConfig().SITE_NAME;
-  const baseLogoSrc = getConfig().LOGO_WHITE_URL || getConfig().LOGO_URL;
 
   return (
     <div className="w-50 d-flex">
-      <div className="col-md-10 bg-primary-400 auth-hero-left position-relative">
-        {/* base edX logo at very top-left */}
+      <div className="col-md-10 bg-light-200 p-0">
         <Hyperlink destination={getConfig().MARKETING_SITE_BASE_URL}>
-          <Image
-            className="logo auth-hero-base-logo"
-            alt={siteName}
-            src={baseLogoSrc}
-          />
+          <Image className="logo position-absolute" alt={getConfig().SITE_NAME} src={getConfig().LOGO_URL} />
         </Hyperlink>
-
-        {/* main hero content block, aligned like Figma */}
-        <div className="auth-hero-content d-flex flex-column">
-          {/* row: [enterprise logo] [yellow slash] [Start learning with edX] */}
-          <div className="d-flex align-items-center">
-            {enterpriseLogoUrl && (
-              <div className="auth-hero-enterprise-logo-wrapper mr-4">
-                <Image
-                  alt={enterpriseName || 'Enterprise'}
-                  src={enterpriseLogoUrl}
-                  className="auth-hero-enterprise-logo"
-                />
+        <div className="min-vh-100 d-flex align-items-center">
+          <div className="large-screen-left-container mr-n4.5 large-yellow-line mt-5" />
+          <div>
+            <h1 className="welcome-to-platform data-hj-suppress">
+              {formatMessage(messages['welcome.to.platform'], { siteName: getConfig().SITE_NAME, fullName })}
+            </h1>
+            <h2 className="complete-your-profile">
+              {formatMessage(messages['complete.your.profile.1'])}
+              <div className="text-accent-a">
+                {formatMessage(messages['complete.your.profile.2'])}
               </div>
-            )}
-
-            <div className="auth-hero-slash" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="191" height="250" viewBox="0 0 191 250" fill="none" style={{ width: '100%', height: '100%' }}>
-                <line x1="69.8107" y1="33.833" x2="32.9503" y2="206.952" stroke="#F0CC00" strokeWidth="8" />
-              </svg>
-            </div>
-
-            <div className="auth-hero-heading">
-              <div
-                className={classNames(
-                  'auth-hero-heading-line text-white',
-                )}
-              >
-                {formatMessage(messages['start.learning'])}
-              </div>
-              <div className="auth-hero-heading-line text-accent-a">
-                {formatMessage(messages['with.edx'])}
-              </div>
-            </div>
+            </h2>
           </div>
-
-          {/* enterprise-specific message aligned under heading */}
-          {enterpriseWelcomeHtml && (
-            <div
-              className="auth-hero-message mt-4"
-              dangerouslySetInnerHTML={{ __html: enterpriseWelcomeHtml }}
-            />
-          )}
         </div>
       </div>
-
-      {/* keep existing right decorative triangle */}
-      <div className="col-md-3 bg-white p-0">
-        <svg
-          className="m1-n1 w-100 h-100 large-screen-svg-primary"
-          preserveAspectRatio="xMaxYMin meet"
-        >
+      <div className="col-md-2 bg-white p-0">
+        <svg className="m1-n1 w-100 h-100 large-screen-svg-light" preserveAspectRatio="xMaxYMin meet">
           <g transform="skewX(171.6)">
             <rect x="0" y="0" height="100%" width="100%" />
           </g>
@@ -94,6 +40,10 @@ const LargeLayout = () => {
       </div>
     </div>
   );
+};
+
+LargeLayout.propTypes = {
+  fullName: PropTypes.string.isRequired,
 };
 
 export default LargeLayout;
