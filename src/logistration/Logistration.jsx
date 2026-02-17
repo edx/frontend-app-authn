@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { connect } from 'react-redux';
 
 import { getConfig } from '@edx/frontend-platform';
 import { sendPageEvent, sendTrackEvent } from '@edx/frontend-platform/analytics';
@@ -17,7 +17,6 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import BaseContainer from '../base-container';
 import { clearThirdPartyAuthContextErrorMessage } from '../common-components/data/actions';
 import {
-  thirdPartyAuthContextSelector,
   tpaProvidersSelector,
 } from '../common-components/data/selectors';
 import messages from '../common-components/messages';
@@ -25,43 +24,28 @@ import { APP_NAME, LOGIN_PAGE, REGISTER_PAGE } from '../data/constants';
 import {
   getTpaHint, getTpaProvider, updatePathWithQueryParams,
 } from '../data/utils';
+import { LoginPage } from '../login';
 import { backupLoginForm } from '../login/data/actions';
-import LoginComponentSlot from '../plugin-slots/MainAppSlot/index';
 import { RegistrationPage } from '../register';
 import { backupRegistrationForm } from '../register/data/actions';
 
-const Logistration = ({
-  selectedPage,
-}) => {
+const Logistration = (props) => {
+  const { selectedPage, tpaProviders } = props;
   const tpaHint = getTpaHint();
-  const tpaProviders = useSelector(tpaProvidersSelector);
-  const dispatch = useDispatch();
   const {
-    providers,
-    secondaryProviders,
+    providers, secondaryProviders,
   } = tpaProviders;
-  const thirdPartyAuthContext = useSelector(thirdPartyAuthContextSelector);
   const { formatMessage } = useIntl();
   const [institutionLogin, setInstitutionLogin] = useState(false);
   const [key, setKey] = useState('');
   const navigate = useNavigate();
   const disablePublicAccountCreation = getConfig().ALLOW_PUBLIC_ACCOUNT_CREATION === false;
   const hideRegistrationLink = getConfig().SHOW_REGISTRATION_LINKS === false;
-  const enterpriseBranding = useSelector(
-    state => state.commonComponents?.thirdPartyAuthContext?.enterpriseBranding,
-  );
 
-  const fullName = thirdPartyAuthContext?.pipelineUserDetails?.full_name
-    || thirdPartyAuthContext?.pipelineUserDetails?.name
-    || null;
-
-  // Show welcome banner if enterprise branding is available
-  const showWelcomeBanner = !!enterpriseBranding;
   useEffect(() => {
     const authService = getAuthService();
     if (authService) {
-      authService.getCsrfTokenService()
-        .getCsrfToken(getConfig().LMS_BASE_URL);
+      authService.getCsrfTokenService().getCsrfToken(getConfig().LMS_BASE_URL);
     }
   });
 
@@ -86,12 +70,13 @@ const Logistration = ({
     if (tabKey === currentTab) {
       return;
     }
+
     sendTrackEvent(`edx.bi.${tabKey.replace('/', '')}_form.toggled`, { category: 'user-engagement', app_name: APP_NAME });
-    dispatch(clearThirdPartyAuthContextErrorMessage());
+    props.clearThirdPartyAuthContextErrorMessage();
     if (tabKey === LOGIN_PAGE) {
-      dispatch(backupRegistrationForm());
+      props.backupRegistrationForm();
     } else if (tabKey === REGISTER_PAGE) {
-      dispatch(backupLoginForm());
+      props.backupLoginForm();
     }
     setKey(tabKey);
   };
@@ -113,11 +98,8 @@ const Logistration = ({
   };
 
   return (
-    <BaseContainer
-      showWelcomeBanner={showWelcomeBanner}
-      fullName={fullName}
-    >
-      <div className="authn-figma-logistration">
+    <BaseContainer>
+      <div>
         {disablePublicAccountCreation
           ? (
             <>
@@ -130,10 +112,7 @@ const Logistration = ({
                 {!institutionLogin && (
                   <h3 className="mb-4.5">{formatMessage(messages['logistration.sign.in'])}</h3>
                 )}
-                <LoginComponentSlot
-                  institutionLogin={institutionLogin}
-                  handleInstitutionLogin={handleInstitutionLogin}
-                />
+                <LoginPage institutionLogin={institutionLogin} handleInstitutionLogin={handleInstitutionLogin} />
               </div>
             </>
           )
@@ -146,16 +125,12 @@ const Logistration = ({
                   </Tabs>
                 )
                 : (!isValidTpaHint() && !hideRegistrationLink && (
-                  <Tabs
-                    defaultActiveKey={selectedPage}
-                    id="controlled-tab"
-                    onSelect={(tabKey) => handleOnSelect(tabKey, selectedPage)}
-                  >
+                  <Tabs defaultActiveKey={selectedPage} id="controlled-tab" onSelect={(tabKey) => handleOnSelect(tabKey, selectedPage)}>
                     <Tab title={formatMessage(messages['logistration.register'])} eventKey={REGISTER_PAGE} />
                     <Tab title={formatMessage(messages['logistration.sign.in'])} eventKey={LOGIN_PAGE} />
                   </Tabs>
                 ))}
-              {key && (
+              { key && (
                 <Navigate to={updatePathWithQueryParams(key)} replace />
               )}
               <div id="main-content" className="main-content">
@@ -165,12 +140,7 @@ const Logistration = ({
                   </h3>
                 )}
                 {selectedPage === LOGIN_PAGE
-                  ? (
-                    <LoginComponentSlot
-                      institutionLogin={institutionLogin}
-                      handleInstitutionLogin={handleInstitutionLogin}
-                    />
-                  )
+                  ? <LoginPage institutionLogin={institutionLogin} handleInstitutionLogin={handleInstitutionLogin} />
                   : (
                     <RegistrationPage
                       institutionLogin={institutionLogin}
@@ -187,10 +157,35 @@ const Logistration = ({
 
 Logistration.propTypes = {
   selectedPage: PropTypes.string,
+  backupLoginForm: PropTypes.func.isRequired,
+  backupRegistrationForm: PropTypes.func.isRequired,
+  clearThirdPartyAuthContextErrorMessage: PropTypes.func.isRequired,
+  tpaProviders: PropTypes.shape({
+    providers: PropTypes.arrayOf(PropTypes.shape({})),
+    secondaryProviders: PropTypes.arrayOf(PropTypes.shape({})),
+  }),
+};
+
+Logistration.defaultProps = {
+  tpaProviders: {
+    providers: [],
+    secondaryProviders: [],
+  },
 };
 
 Logistration.defaultProps = {
   selectedPage: REGISTER_PAGE,
 };
 
-export default Logistration;
+const mapStateToProps = state => ({
+  tpaProviders: tpaProvidersSelector(state),
+});
+
+export default connect(
+  mapStateToProps,
+  {
+    backupLoginForm,
+    backupRegistrationForm,
+    clearThirdPartyAuthContextErrorMessage,
+  },
+)(Logistration);
