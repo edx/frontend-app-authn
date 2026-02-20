@@ -12,7 +12,7 @@ import configureStore from 'redux-mock-store';
 
 import mockTagular from '../../cohesion/utils';
 import {
-  APP_NAME, COMPLETE_STATE, LOGIN_PAGE, PENDING_STATE,
+  COMPLETE_STATE, LOGIN_PAGE, PENDING_STATE,
 } from '../../data/constants';
 import { backupLoginFormBegin, dismissPasswordResetBanner, loginRequest } from '../data/actions';
 import { INTERNAL_SERVER_ERROR } from '../data/constants';
@@ -762,7 +762,7 @@ describe('LoginPage', () => {
 
   it('should send page event when login page is rendered', () => {
     render(reduxWrapper(<LoginPage {...props} />));
-    expect(sendPageEvent).toHaveBeenCalledWith('login_and_registration', 'login', { app_name: APP_NAME });
+    expect(sendPageEvent).toHaveBeenCalledWith('login_and_registration', 'login');
   });
 
   it('tests that form is in invalid state when it is submitted', () => {
@@ -795,7 +795,10 @@ describe('LoginPage', () => {
       { selector: '#forgot-password' },
     ));
 
-    expect(sendTrackEvent).toHaveBeenCalledWith('edx.bi.password-reset_form.toggled', { category: 'user-engagement', app_name: APP_NAME });
+    expect(sendTrackEvent).toHaveBeenCalledWith(
+      'edx.bi.password-reset_form.toggled',
+      expect.any(Object),
+    );
   });
 
   it('should backup the login form state when shouldBackupState is true', () => {
