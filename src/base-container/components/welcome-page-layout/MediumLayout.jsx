@@ -63,7 +63,10 @@ const MediumLayout = () => {
             {enterpriseWelcomeHtml && (
               <div
                 className="auth-hero-message mt-4"
-                dangerouslySetInnerHTML={{ __html: enterpriseWelcomeHtml }}
+                // eslint-disable-next-line react/no-danger
+                dangerouslySetInnerHTML={{
+                  __html: enterpriseWelcomeHtml,
+                }}
               />
             )}
           </div>
