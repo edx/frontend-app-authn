@@ -38,6 +38,11 @@ import { INVALID_FORM, TPA_AUTHENTICATION_FAILURE } from './data/constants';
 import LoginFailureMessage from './LoginFailure';
 import messages from './messages';
 
+const DEFAULT_LOGIN_FORM_DATA = {
+  formFields: { emailOrUsername: '', password: '' },
+  errors: { emailOrUsername: '', password: '' },
+};
+
 const LoginPage = ({
   institutionLogin,
   handleInstitutionLogin,
@@ -59,7 +64,7 @@ const LoginPage = ({
     thirdPartyAuthContext,
     thirdPartyAuthApiStatus,
   } = useSelector((state) => ({
-    backedUpFormData: state.login.loginFormData,
+    backedUpFormData: state.login?.loginFormData ?? DEFAULT_LOGIN_FORM_DATA,
     loginErrorCode: state.login.loginErrorCode,
     loginErrorContext: state.login.loginErrorContext,
     loginResult: state.login.loginResult,
