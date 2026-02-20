@@ -11,7 +11,6 @@ import configureStore from 'redux-mock-store';
 import Logistration from './Logistration';
 import { clearThirdPartyAuthContextErrorMessage } from '../common-components/data/actions';
 import {
-  APP_NAME,
   COMPLETE_STATE, LOGIN_PAGE, REGISTER_PAGE,
 } from '../data/constants';
 import { backupLoginForm } from '../login/data/actions';

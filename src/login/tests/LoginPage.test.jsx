@@ -12,7 +12,7 @@ import configureStore from 'redux-mock-store';
 
 import mockTagular from '../../cohesion/utils';
 import {
-  APP_NAME, COMPLETE_STATE, LOGIN_PAGE, PENDING_STATE,
+  COMPLETE_STATE, LOGIN_PAGE, PENDING_STATE,
 } from '../../data/constants';
 import { backupLoginFormBegin, dismissPasswordResetBanner, loginRequest } from '../data/actions';
 import { INTERNAL_SERVER_ERROR } from '../data/constants';

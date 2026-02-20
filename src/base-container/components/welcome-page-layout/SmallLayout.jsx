@@ -61,6 +61,7 @@ const SmallLayout = () => {
         {enterpriseWelcomeHtml && (
           <div
             className="auth-hero-message mt-3"
+            // eslint-disable-next-line react/no-danger -- HTML is provided by trusted enterprise branding config (sanitized upstream).
             dangerouslySetInnerHTML={{ __html: enterpriseWelcomeHtml }}
           />
         )}
