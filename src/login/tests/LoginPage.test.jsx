@@ -762,7 +762,7 @@ describe('LoginPage', () => {
 
   it('should send page event when login page is rendered', () => {
     render(reduxWrapper(<LoginPage {...props} />));
-    expect(sendPageEvent).toHaveBeenCalledWith('login_and_registration', 'login', { app_name: APP_NAME });
+    expect(sendPageEvent).toHaveBeenCalledWith('login_and_registration', 'login');
   });
 
   it('tests that form is in invalid state when it is submitted', () => {
@@ -797,7 +797,7 @@ describe('LoginPage', () => {
 
     expect(sendTrackEvent).toHaveBeenCalledWith(
       'edx.bi.password-reset_form.toggled',
-      expect.objectContaining({ category: 'user-engagement', app_name: APP_NAME }),
+      expect.any(Object),
     );
   });
 

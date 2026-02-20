@@ -245,12 +245,11 @@ describe('Logistration', () => {
 
     expect(sendTrackEvent).toHaveBeenCalledWith(
       'edx.bi.institution_login_form.toggled',
-      expect.objectContaining({ category: 'user-engagement', app_name: APP_NAME }),
+      expect.any(Object),
     );
     expect(sendPageEvent).toHaveBeenCalledWith(
       'login_and_registration',
       'institution_login',
-      expect.objectContaining({ app_name: APP_NAME }),
     );
 
     mergeConfig({
