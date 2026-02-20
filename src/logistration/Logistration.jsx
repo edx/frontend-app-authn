@@ -19,7 +19,6 @@ import { clearThirdPartyAuthContextErrorMessage } from '../common-components/dat
 import {
   thirdPartyAuthContextSelector,
   tpaProvidersSelector,
-  thirdPartyAuthContextSelector
 } from '../common-components/data/selectors';
 import messages from '../common-components/messages';
 import { LOGIN_PAGE, REGISTER_PAGE } from '../data/constants';
@@ -27,7 +26,7 @@ import {
   getTpaHint, getTpaProvider, updatePathWithQueryParams,
 } from '../data/utils';
 import { backupLoginForm } from '../login/data/actions';
-import LoginComponentSlot from '../plugin-slots/LoginComponentSlot';
+import { LoginPage } from '../login';
 import { RegistrationPage } from '../register';
 import { backupRegistrationForm } from '../register/data/actions';
 
@@ -41,21 +40,20 @@ const Logistration = ({
     providers,
     secondaryProviders,
   } = tpaProviders;
-   const thirdPartyAuthContext = useSelector(thirdPartyAuthContextSelector);  
+  const thirdPartyAuthContext = useSelector(thirdPartyAuthContextSelector);
   const { formatMessage } = useIntl();
   const [institutionLogin, setInstitutionLogin] = useState(false);
   const [key, setKey] = useState('');
   const navigate = useNavigate();
   const disablePublicAccountCreation = getConfig().ALLOW_PUBLIC_ACCOUNT_CREATION === false;
   const hideRegistrationLink = getConfig().SHOW_REGISTRATION_LINKS === false;
-const enterpriseBranding = useSelector(
+  const enterpriseBranding = useSelector(
     state => state.commonComponents?.thirdPartyAuthContext?.enterpriseBranding,
   );
- 
+
   const fullName = thirdPartyAuthContext?.pipelineUserDetails?.full_name
     || thirdPartyAuthContext?.pipelineUserDetails?.name
     || null;
-
 
   // Show welcome banner if enterprise branding is available
   const showWelcomeBanner = !!enterpriseBranding;
@@ -132,7 +130,7 @@ const enterpriseBranding = useSelector(
                 {!institutionLogin && (
                   <h3 className="mb-4.5">{formatMessage(messages['logistration.sign.in'])}</h3>
                 )}
-                <LoginComponentSlot
+                <LoginPage
                   institutionLogin={institutionLogin}
                   handleInstitutionLogin={handleInstitutionLogin}
                 />
@@ -168,7 +166,7 @@ const enterpriseBranding = useSelector(
                 )}
                 {selectedPage === LOGIN_PAGE
                   ? (
-                    <LoginComponentSlot
+                    <LoginPage
                       institutionLogin={institutionLogin}
                       handleInstitutionLogin={handleInstitutionLogin}
                     />

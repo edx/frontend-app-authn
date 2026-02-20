@@ -44,7 +44,7 @@ const LoginPage = ({
 }) => {
   const dispatch = useDispatch();
   const backupFormState = useCallback((data) => dispatch(backupLoginFormBegin(data)), [dispatch]);
-   const getTPADataFromBackend = useCallback(
+  const getTPADataFromBackend = useCallback(
     (urlParams) => dispatch(getThirdPartyAuthContext(urlParams)),
     [dispatch],
   );
@@ -214,7 +214,8 @@ const LoginPage = ({
     }
 
     if (skipHintedLogin) {
-      window.location.href = `${LMS_BASE}${provider.loginUrl}`;
+      const lmsBaseUrl = getConfig().LMS_BASE_URL;
+      window.location.href = `${lmsBaseUrl}${provider.loginUrl}`;
       return null;
     }
 

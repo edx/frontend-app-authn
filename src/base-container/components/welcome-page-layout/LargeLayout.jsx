@@ -1,16 +1,15 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 
 import { getConfig } from '@edx/frontend-platform';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Hyperlink, Image } from '@openedx/paragon';
-import classNames from 'classnames';
 
 import messages from './messages';
 
-
-const LargeLayout = ({ fullName = null }) => {
+const LargeLayout = () => {
   const { formatMessage } = useIntl();
 
   const enterpriseBranding = useSelector(
@@ -20,8 +19,7 @@ const LargeLayout = ({ fullName = null }) => {
   const enterpriseLogoUrl = enterpriseBranding?.enterpriseLogoUrl || null;
   const enterpriseName = enterpriseBranding?.enterpriseName || null;
 
-  const enterpriseWelcomeHtml =
-    enterpriseBranding?.enterpriseBrandedWelcomeString
+  const enterpriseWelcomeHtml = enterpriseBranding?.enterpriseBrandedWelcomeString
     || enterpriseBranding?.platformWelcomeString
     || '';
 
@@ -53,7 +51,7 @@ const LargeLayout = ({ fullName = null }) => {
                 />
               </div>
             )}
- 
+
             <div className="auth-hero-slash mr-4" aria-hidden="true" />
 
             <div className="auth-hero-heading">
@@ -95,8 +93,6 @@ const LargeLayout = ({ fullName = null }) => {
   );
 };
 
-LargeLayout.propTypes = {
-  fullName: PropTypes.string,
-};
+LargeLayout.propTypes = {};
 
 export default LargeLayout;

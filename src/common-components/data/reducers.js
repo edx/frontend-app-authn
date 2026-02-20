@@ -29,18 +29,17 @@ const reducer = (state = defaultState, action = {}) => {
         ...state,
         thirdPartyAuthApiStatus: PENDING_STATE,
       };
-   case THIRD_PARTY_AUTH_CONTEXT.SUCCESS: {
-  return {
-    ...state,
-    fieldDescriptions: action.payload.fieldDescriptions?.fields,
-    optionalFields: action.payload.optionalFields,
-    thirdPartyAuthContext: {
-      ...action.payload.thirdPartyAuthContext,
-      enterpriseBranding: action.payload.thirdPartyAuthContext.enterpriseBranding || null,
-    },
-    thirdPartyAuthApiStatus: COMPLETE_STATE,
-  };
-}
+    case THIRD_PARTY_AUTH_CONTEXT.SUCCESS:
+      return {
+        ...state,
+        fieldDescriptions: action.payload.fieldDescriptions?.fields,
+        optionalFields: action.payload.optionalFields,
+        thirdPartyAuthContext: {
+          ...action.payload.thirdPartyAuthContext,
+          enterpriseBranding: action.payload.thirdPartyAuthContext.enterpriseBranding || null,
+        },
+        thirdPartyAuthApiStatus: COMPLETE_STATE,
+      };
 
     case THIRD_PARTY_AUTH_CONTEXT.FAILURE:
       return {
