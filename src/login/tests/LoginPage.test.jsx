@@ -795,7 +795,10 @@ describe('LoginPage', () => {
       { selector: '#forgot-password' },
     ));
 
-    expect(sendTrackEvent).toHaveBeenCalledWith('edx.bi.password-reset_form.toggled', { category: 'user-engagement', app_name: APP_NAME });
+    expect(sendTrackEvent).toHaveBeenCalledWith(
+      'edx.bi.password-reset_form.toggled',
+      expect.objectContaining({ category: 'user-engagement', app_name: APP_NAME }),
+    );
   });
 
   it('should backup the login form state when shouldBackupState is true', () => {

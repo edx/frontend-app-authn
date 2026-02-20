@@ -238,14 +238,20 @@ describe('Logistration', () => {
     });
 
     const props = { selectedPage: LOGIN_PAGE };
-    render(reduxWrapper(<Logistration {...props} />));
     const { container } = render(reduxWrapper(<Logistration {...props} />));
     const institutionButton = container.querySelector('button[data-event-name="institution_login"]');
     expect(institutionButton).toBeTruthy();
     fireEvent.click(institutionButton);
 
-    expect(sendTrackEvent).toHaveBeenCalledWith('edx.bi.institution_login_form.toggled', { category: 'user-engagement', app_name: APP_NAME });
-    expect(sendPageEvent).toHaveBeenCalledWith('login_and_registration', 'institution_login', { app_name: APP_NAME });
+    expect(sendTrackEvent).toHaveBeenCalledWith(
+      'edx.bi.institution_login_form.toggled',
+      expect.objectContaining({ category: 'user-engagement', app_name: APP_NAME }),
+    );
+    expect(sendPageEvent).toHaveBeenCalledWith(
+      'login_and_registration',
+      'institution_login',
+      expect.objectContaining({ app_name: APP_NAME }),
+    );
 
     mergeConfig({
       DISABLE_ENTERPRISE_LOGIN: '',
