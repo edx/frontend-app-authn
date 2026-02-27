@@ -2,7 +2,6 @@ import React from 'react';
 
 import { getConfig } from '@edx/frontend-platform';
 import { breakpoints } from '@openedx/paragon';
-import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import MediaQuery from 'react-responsive';
 
@@ -30,7 +29,7 @@ const BaseContainer = ({ children, showWelcomeBanner, fullName }) => {
         <MediaQuery minWidth={breakpoints.extraLarge.minWidth}>
           {showWelcomeBanner ? <AuthLargeLayout fullName={fullName} /> : <ImageLargeLayout />}
         </MediaQuery>
-        <div className={classNames('content', { 'align-items-center mt-0': showWelcomeBanner })}>
+        <div className="content">
           {children}
         </div>
       </div>
@@ -50,7 +49,7 @@ const BaseContainer = ({ children, showWelcomeBanner, fullName }) => {
         <MediaQuery minWidth={breakpoints.extraLarge.minWidth}>
           {showWelcomeBanner ? <AuthLargeLayout fullName={fullName} /> : <DefaultLargeLayout />}
         </MediaQuery>
-        <div className={classNames('content', { 'align-items-center mt-0': showWelcomeBanner })}>
+        <div className="content">
           {children}
         </div>
       </div>
