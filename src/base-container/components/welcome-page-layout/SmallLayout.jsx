@@ -8,7 +8,7 @@ import { Hyperlink, Image } from '@openedx/paragon';
 import messages from './messages';
 
 const SmallLayout = () => {
-  const { formatMessage } = useIntl(); 
+  const { formatMessage } = useIntl();
 
   const enterpriseBranding = useSelector(
     state => state.commonComponents?.thirdPartyAuthContext?.enterpriseBranding,
