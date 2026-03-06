@@ -44,7 +44,7 @@ const MediumLayout = () => {
                 </div>
               )}
 
-              <div className="auth-hero-slash" aria-hidden="true">
+              <div className="auth-hero-slash mr-4" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" width="191" height="250" viewBox="0 0 191 250" fill="none" style={{ width: '100%', height: '100%' }}>
                   <line x1="69.8107" y1="33.833" x2="32.9503" y2="206.952" stroke="#F0CC00" strokeWidth="8" />
                 </svg>
@@ -62,7 +62,7 @@ const MediumLayout = () => {
 
             {enterpriseWelcomeHtml && (
               <div
-                className="auth-hero-message mt-4"
+                className="auth-hero-message mt-3"
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{
                   __html: enterpriseWelcomeHtml,
