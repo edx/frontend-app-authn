@@ -53,13 +53,15 @@ const ResetPasswordPage = (props) => {
   }, [props.status]);
 
   useEffect(() => {
-    if (props.status !== TOKEN_STATE.PENDING && props.status !== PASSWORD_RESET_ERROR) {
+    if (props.status === PASSWORD_RESET_ERROR && props.errorMsg) {
+      setFormErrors(prev => ({ ...prev, newPassword: props.errorMsg }));
+    } else if (props.status !== TOKEN_STATE.PENDING && props.status !== PASSWORD_RESET_ERROR) {
       setErrorCode(props.status);
     }
     if (props.status === PASSWORD_VALIDATION_ERROR) {
       setFormErrors({ newPassword: newPasswordError });
     }
-  }, [props.status, newPasswordError]);
+  }, [props.status, props.errorMsg, newPasswordError]);
 
   const validatePasswordFromBackend = async (password) => {
     let errorMessage = '';
@@ -147,7 +149,7 @@ const ResetPasswordPage = (props) => {
       props.validateToken(token);
       return <Spinner animation="border" variant="primary" className="spinner--position-centered" />;
     }
-  } else if (props.status === PASSWORD_RESET_ERROR) {
+  } else if (props.status === PASSWORD_RESET_ERROR && !props.errorMsg) {
     navigate(updatePathWithQueryParams(RESET_PAGE));
   } else if (props.status === SUCCESS) {
     navigate(updatePathWithQueryParams(LOGIN_PAGE));

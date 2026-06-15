@@ -11,7 +11,7 @@ import {
   validateTokenBegin,
   validateTokenSuccess,
 } from './actions';
-import { PASSWORD_RESET, PASSWORD_VALIDATION_ERROR } from './constants';
+import { PASSWORD_RESET, PASSWORD_RESET_ERROR, PASSWORD_VALIDATION_ERROR } from './constants';
 import { resetPassword, validateToken } from './service';
 
 // Services
@@ -43,8 +43,10 @@ export function* handleResetPassword(action) {
     const resetStatus = data.reset_status;
     const resetErrors = data.err_msg;
 
-    if (resetStatus) {
+    if (resetStatus && !resetErrors) {
       yield put(resetPasswordSuccess(resetStatus));
+    } else if (!resetStatus && resetErrors) {
+      yield put(resetPasswordFailure(PASSWORD_RESET_ERROR, resetErrors));
     } else if (data.token_invalid) {
       yield put(passwordResetFailure(PASSWORD_RESET.INVALID_TOKEN));
     } else {
