@@ -1,8 +1,7 @@
-import {
-  createInstance,
-} from '@optimizely/react-sdk';
+import { getConfig } from '@edx/frontend-platform';
+import { createInstance } from '@optimizely/react-sdk';
 
-const OPTIMIZELY_SDK_KEY = process.env.OPTIMIZELY_FULL_STACK_SDK_KEY;
+const OPTIMIZELY_SDK_KEY = process.env.OPTIMIZELY_FULL_STACK_SDK_KEY || getConfig().OPTIMIZELY_FULL_STACK_SDK_KEY;
 
 const getOptimizelyInstance = () => {
   if (OPTIMIZELY_SDK_KEY) {

@@ -24,7 +24,7 @@ import { updatePathWithQueryParams } from './data/utils';
 import { ForgotPasswordPage } from './forgot-password';
 import Logistration from './logistration/Logistration';
 import MainAppSlot from './plugin-slots/MainAppSlot';
-import { ProgressiveProfiling } from './progressive-profiling';
+import OptimizelyProviderProgressiveProfiling from './progressive-profiling/OptimizelyProviderProgressiveProfiling';
 import { RecommendationsPage } from './recommendations';
 import { RegistrationPage } from './register';
 import { ResetPasswordPage } from './reset-password';
@@ -60,7 +60,7 @@ const MainApp = () => {
           <Route path={REGISTER_PAGE} element={<UnAuthOnlyRoute><Logistration /></UnAuthOnlyRoute>} />
           <Route path={RESET_PAGE} element={<UnAuthOnlyRoute><ForgotPasswordPage /></UnAuthOnlyRoute>} />
           <Route path={PASSWORD_RESET_CONFIRM} element={<ResetPasswordPage />} />
-          <Route path={AUTHN_PROGRESSIVE_PROFILING} element={<ProgressiveProfiling />} />
+          <Route path={AUTHN_PROGRESSIVE_PROFILING} element={<OptimizelyProviderProgressiveProfiling />} />
           <Route path={RECOMMENDATIONS} element={<RecommendationsPage />} />
           <Route path={PAGE_NOT_FOUND} element={<NotFoundPage />} />
           <Route path="*" element={<Navigate replace to={PAGE_NOT_FOUND} />} />
