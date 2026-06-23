@@ -5,12 +5,14 @@ import ProgressiveProfilingExperiment from './ProgressiveProfilingExperiment';
 import optimizelyClient from '../data/optimizely';
 
 const OptimizelyProviderProgressiveProfiling = () => {
-  const user = getAuthenticatedUser();
+  const { userId } = getAuthenticatedUser() ?? {};
 
   return (
     <OptimizelyProvider
       optimizely={optimizelyClient}
-      user={{ id: user?.id ? String(user.id) : 'anonymous' }}
+      user={{
+        id: userId?.toString(),
+      }}
     >
       <ProgressiveProfilingExperiment />
     </OptimizelyProvider>

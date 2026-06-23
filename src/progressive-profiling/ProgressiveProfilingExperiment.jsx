@@ -20,7 +20,7 @@ const ProgressiveProfilingExperiment = () => {
     }
 
     if (decision?.variationKey === PP_REDIRECT_VARIATION_EXPERIMENT) {
-      const dashboardUrl = getConfig().HOME_URL;
+      const dashboardUrl = `${getConfig().HOME_URL}/welcome`;
       window.location.assign(dashboardUrl);
     }
   }, [decision, clientReady]);
