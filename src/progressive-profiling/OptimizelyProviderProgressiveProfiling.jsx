@@ -10,7 +10,7 @@ const OptimizelyProviderProgressiveProfiling = () => {
   return (
     <OptimizelyProvider
       optimizely={optimizelyClient}
-      user={{ id: user?.id ? String(user.id) : undefined }}
+      user={{ id: user?.id ? String(user.id) : 'anonymous' }}
     >
       <ProgressiveProfilingExperiment />
     </OptimizelyProvider>
