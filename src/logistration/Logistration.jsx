@@ -21,7 +21,7 @@ import {
   tpaProvidersSelector,
 } from '../common-components/data/selectors';
 import messages from '../common-components/messages';
-import { LOGIN_PAGE, REGISTER_PAGE } from '../data/constants';
+import { LOGIN_PAGE, REGISTER_PAGE, APP_NAME } from '../data/constants';
 import {
   getTpaHint, getTpaProvider, updatePathWithQueryParams,
 } from '../data/utils';
@@ -63,7 +63,7 @@ const Logistration = ({
       authService.getCsrfTokenService()
         .getCsrfToken(getConfig().LMS_BASE_URL);
     }
-  });
+  }, []);
 
   useEffect(() => {
     if (disablePublicAccountCreation) {
@@ -72,7 +72,7 @@ const Logistration = ({
   }, [navigate, disablePublicAccountCreation]);
 
   const handleInstitutionLogin = (e) => {
-    sendTrackEvent('edx.bi.institution_login_form.toggled', { category: 'user-engagement' });
+    sendTrackEvent('edx.bi.institution_login_form.toggled', { category: 'user-engagement', app_name: APP_NAME });
     if (typeof e === 'string') {
       sendPageEvent('login_and_registration', e === '/login' ? 'login' : 'register');
     } else {
@@ -86,7 +86,7 @@ const Logistration = ({
     if (tabKey === currentTab) {
       return;
     }
-    sendTrackEvent(`edx.bi.${tabKey.replace('/', '')}_form.toggled`, { category: 'user-engagement' });
+    sendTrackEvent(`edx.bi.${tabKey.replace('/', '')}_form.toggled`, { category: 'user-engagement', app_name: APP_NAME });
     dispatch(clearThirdPartyAuthContextErrorMessage());
     if (tabKey === LOGIN_PAGE) {
       dispatch(backupRegistrationForm());
