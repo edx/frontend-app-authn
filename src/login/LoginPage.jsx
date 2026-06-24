@@ -11,12 +11,14 @@ import { Helmet } from 'react-helmet';
 import Skeleton from 'react-loading-skeleton';
 import { Link } from 'react-router-dom';
 
+import AccountActivationMessage from './AccountActivationMessage';
 import {
   ELEMENT_NAME,
   ELEMENT_TEXT,
   ELEMENT_TYPES,
   PAGE_TYPES,
 } from '../cohesion/constants';
+import { setCohesionEventStates } from '../cohesion/data/actions';
 import {
   FormGroup,
   InstitutionLogistration,
@@ -24,11 +26,12 @@ import {
   RedirectLogistration,
   ThirdPartyAuthAlert,
 } from '../common-components';
+import LoginFailureMessage from './LoginFailure';
+import messages from './messages';
 import { getThirdPartyAuthContext } from '../common-components/data/actions';
 import { thirdPartyAuthContextSelector } from '../common-components/data/selectors';
 import EnterpriseSSO from '../common-components/EnterpriseSSO';
 import ThirdPartyAuth from '../common-components/ThirdPartyAuth';
-import { setCohesionEventStates } from '../cohesion/data/actions';
 import { PENDING_STATE, RESET_PAGE } from '../data/constants';
 import {
   getActivationStatus,
@@ -37,16 +40,13 @@ import {
   getTpaProvider,
   updatePathWithQueryParams,
 } from '../data/utils';
+import { backupLoginFormBegin, dismissPasswordResetBanner, loginRequest } from './data/actions';
 import { removeCookie } from '../data/utils/cookies';
 import ResetPasswordSuccess from '../reset-password/ResetPasswordSuccess';
+import { INVALID_FORM, TPA_AUTHENTICATION_FAILURE } from './data/constants';
 import {
   trackForgotPasswordLinkClick, trackLoginPageViewed, trackLoginSuccess,
 } from '../tracking/trackers/login';
-import AccountActivationMessage from './AccountActivationMessage';
-import { backupLoginFormBegin, dismissPasswordResetBanner, loginRequest } from './data/actions';
-import { INVALID_FORM, TPA_AUTHENTICATION_FAILURE } from './data/constants';
-import LoginFailureMessage from './LoginFailure';
-import messages from './messages';
 
 const DEFAULT_LOGIN_FORM_DATA = {
   formFields: { emailOrUsername: '', password: '' },
