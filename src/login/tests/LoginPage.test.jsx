@@ -762,7 +762,11 @@ describe('LoginPage', () => {
 
   it('should send page event when login page is rendered', () => {
     render(reduxWrapper(<LoginPage {...props} />));
-    expect(sendPageEvent).toHaveBeenCalledWith('login_and_registration', 'login');
+    expect(sendPageEvent).toHaveBeenCalledWith(
+      'login_and_registration',
+      'login',
+      { app_name: 'authn_mfe' },
+    );
   });
 
   it('tests that form is in invalid state when it is submitted', () => {
