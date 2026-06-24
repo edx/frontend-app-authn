@@ -2,11 +2,7 @@ import {
   useCallback, useEffect, useMemo, useState,
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  trackForgotPasswordLinkClick, trackLoginPageViewed, trackLoginSuccess,
-} from '../tracking/trackers/login';
-import { setCohesionEventStates } from '../cohesion/data/actions';
-import { ELEMENT_NAME, ELEMENT_TEXT, ELEMENT_TYPES, PAGE_TYPES } from '../cohesion/constants';
+
 import { getConfig } from '@edx/frontend-platform';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Form, StatefulButton } from '@openedx/paragon';
@@ -14,7 +10,9 @@ import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import Skeleton from 'react-loading-skeleton';
 import { Link } from 'react-router-dom';
-import { removeCookie } from '../data/utils/cookies';
+
+import { ELEMENT_NAME, ELEMENT_TEXT, ELEMENT_TYPES, PAGE_TYPES } from '../cohesion/constants';
+import { setCohesionEventStates } from '../cohesion/data/actions';
 import {
   FormGroup,
   InstitutionLogistration,
@@ -22,7 +20,6 @@ import {
   RedirectLogistration,
   ThirdPartyAuthAlert,
 } from '../common-components';
-import AccountActivationMessage from './AccountActivationMessage';
 import { getThirdPartyAuthContext } from '../common-components/data/actions';
 import { thirdPartyAuthContextSelector } from '../common-components/data/selectors';
 import EnterpriseSSO from '../common-components/EnterpriseSSO';
@@ -35,7 +32,12 @@ import {
   getTpaProvider,
   updatePathWithQueryParams,
 } from '../data/utils';
+import { removeCookie } from '../data/utils/cookies';
 import ResetPasswordSuccess from '../reset-password/ResetPasswordSuccess';
+import {
+  trackForgotPasswordLinkClick, trackLoginPageViewed, trackLoginSuccess,
+} from '../tracking/trackers/login';
+import AccountActivationMessage from './AccountActivationMessage';
 import { backupLoginFormBegin, dismissPasswordResetBanner, loginRequest } from './data/actions';
 import { INVALID_FORM, TPA_AUTHENTICATION_FAILURE } from './data/constants';
 import LoginFailureMessage from './LoginFailure';

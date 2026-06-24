@@ -21,7 +21,7 @@ import {
   tpaProvidersSelector,
 } from '../common-components/data/selectors';
 import messages from '../common-components/messages';
-import { LOGIN_PAGE, REGISTER_PAGE, APP_NAME } from '../data/constants';
+import { APP_NAME, LOGIN_PAGE, REGISTER_PAGE } from '../data/constants';
 import {
   getTpaHint, getTpaProvider, updatePathWithQueryParams,
 } from '../data/utils';
