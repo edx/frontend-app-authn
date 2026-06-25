@@ -28,7 +28,7 @@ const ProgressiveProfilingExperiment = () => {
       window.location.assign(dashboardUrl);
     }
   }, [decision, clientReady]);
-  
+
   // Also wait for Optimizely client readiness before rendering the control component,
   // to avoid triggering ProgressiveProfiling's own redirect logic prematurely.
   if (!clientReady) {
