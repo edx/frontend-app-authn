@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import OptimizelyProviderProgressiveProfiling from '../OptimizelyProviderProgressiveProfiling';
@@ -23,8 +23,12 @@ jest.mock('@optimizely/react-sdk', () => ({
   OptimizelyProvider: (props) => mockOptimizelyProvider(props),
 }));
 
-jest.mock('../ProgressiveProfiling', () => () => <div>progressive-profiling-control</div>);
-jest.mock('../ProgressiveProfilingExperiment', () => () => <div>progressive-profiling-experiment</div>);
+jest.mock('../ProgressiveProfiling', () => function ProgressiveProfilingMock() {
+  return <div>progressive-profiling-control</div>;
+});
+jest.mock('../ProgressiveProfilingExperiment', () => function ProgressiveProfilingExperimentMock() {
+  return <div>progressive-profiling-experiment</div>;
+});
 
 const renderWithRouter = (entry = { pathname: '/progressive-profiling' }) => render(
   <MemoryRouter initialEntries={[entry]}>
