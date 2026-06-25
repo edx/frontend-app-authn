@@ -20,13 +20,22 @@ const ProgressiveProfilingExperiment = () => {
     }
 
     if (decision?.variationKey === PP_REDIRECT_VARIATION_EXPERIMENT) {
-      const dashboardUrl = `${getConfig().HOME_URL}/welcome`;
+      const homeUrl = getConfig().HOME_URL;
+      if (!homeUrl || homeUrl === 'null') {
+        return;
+      }
+      const dashboardUrl = new URL('/welcome', homeUrl).toString();
       window.location.assign(dashboardUrl);
     }
   }, [decision, clientReady]);
+  
+  // Also wait for Optimizely client readiness before rendering the control component,
+  // to avoid triggering ProgressiveProfiling's own redirect logic prematurely.
+  if (!clientReady) {
+    return null;
+  }
 
-  // If we have a decision and it's the redirect variant, don't render anything
-  if (clientReady && decision?.variationKey === PP_REDIRECT_VARIATION_EXPERIMENT) {
+  if (decision?.variationKey === PP_REDIRECT_VARIATION_EXPERIMENT) {
     return null;
   }
 
