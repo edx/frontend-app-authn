@@ -21,10 +21,11 @@ const ProgressiveProfilingExperiment = () => {
 
     if (decision?.variationKey === PP_REDIRECT_VARIATION_EXPERIMENT) {
       const homeUrl = getConfig().HOME_URL;
-      if (!homeUrl || homeUrl === 'null') {
+      const normalizedHomeUrl = homeUrl === 'null' ? '' : homeUrl;
+      if (!normalizedHomeUrl) {
         return;
       }
-      const dashboardUrl = new URL('/welcome', homeUrl).toString();
+      const dashboardUrl = new URL('/welcome', normalizedHomeUrl).toString();
       window.location.assign(dashboardUrl);
     }
   }, [decision, clientReady]);
