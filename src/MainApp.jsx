@@ -24,12 +24,11 @@ import { updatePathWithQueryParams } from './data/utils';
 import { ForgotPasswordPage } from './forgot-password';
 import Logistration from './logistration/Logistration';
 import MainAppSlot from './plugin-slots/MainAppSlot';
+import OptimizelyProviderProgressiveProfiling from './progressive-profiling/OptimizelyProviderProgressiveProfiling';
 import { RecommendationsPage } from './recommendations';
 import { RegistrationPage } from './register';
 import { ResetPasswordPage } from './reset-password';
-
 import './index.scss';
-import OptimizelyProviderProgressiveProfiling from './progressive-profiling/OptimizelyProviderProgressiveProfiling';
 
 registerIcons();
 
