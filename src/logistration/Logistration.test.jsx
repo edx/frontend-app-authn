@@ -249,6 +249,7 @@ describe('Logistration', () => {
     expect(sendPageEvent).toHaveBeenCalledWith(
       'login_and_registration',
       'institution_login',
+      { app_name: 'authn_mfe' },
     );
 
     mergeConfig({
