@@ -74,9 +74,9 @@ const Logistration = ({
   const handleInstitutionLogin = (e) => {
     sendTrackEvent('edx.bi.institution_login_form.toggled', { category: 'user-engagement', app_name: APP_NAME });
     if (typeof e === 'string') {
-      sendPageEvent('login_and_registration', e === '/login' ? 'login' : 'register');
+      sendPageEvent('login_and_registration', e === '/login' ? 'login' : 'register', { app_name: APP_NAME });
     } else {
-      sendPageEvent('login_and_registration', e.target.dataset.eventName);
+      sendPageEvent('login_and_registration', e.target.dataset.eventName, { app_name: APP_NAME });
     }
 
     setInstitutionLogin(!institutionLogin);
