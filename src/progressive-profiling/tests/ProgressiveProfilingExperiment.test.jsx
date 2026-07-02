@@ -1,6 +1,6 @@
 import { getConfig } from '@edx/frontend-platform';
-import { render, screen, waitFor } from '@testing-library/react';
 import { useDecision } from '@optimizely/react-sdk';
+import { render, screen, waitFor } from '@testing-library/react';
 
 import ProgressiveProfilingExperiment from '../ProgressiveProfilingExperiment';
 

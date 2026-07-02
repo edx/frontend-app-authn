@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types';
-
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { OptimizelyProvider } from '@optimizely/react-sdk';
+import PropTypes from 'prop-types';
 
 import optimizelyClient from '../data/optimizely';
 
