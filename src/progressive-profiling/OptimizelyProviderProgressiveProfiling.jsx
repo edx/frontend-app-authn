@@ -1,30 +1,21 @@
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
-import { OptimizelyProvider } from '@optimizely/react-sdk';
 import { useLocation } from 'react-router-dom';
 
 import ProgressiveProfiling from './ProgressiveProfiling';
 import ProgressiveProfilingExperiment from './ProgressiveProfilingExperiment';
-import optimizelyClient from '../data/optimizely';
+import OptimizelyProviderWrapper from '../optimizely/OptimizelyProviderWrapper';
 
 const OptimizelyProviderProgressiveProfiling = () => {
   const location = useLocation();
   const authenticatedUser = getAuthenticatedUser() || location.state?.authenticatedUser;
-  const userId = authenticatedUser?.userId;
-
-  // If Optimizely isn't configured (or we can't identify the user), fall back to control behavior.
-  if (!optimizelyClient || !userId) {
-    return <ProgressiveProfiling />;
-  }
+  const fallbackUserId = authenticatedUser?.userId;
 
   return (
-    <OptimizelyProvider
-      optimizely={optimizelyClient}
-      user={{
-        id: userId.toString(),
-      }}
-    >
-      <ProgressiveProfilingExperiment />
-    </OptimizelyProvider>
+    <OptimizelyProviderWrapper
+      defaultComponent={ProgressiveProfiling}
+      experimentalComponent={ProgressiveProfilingExperiment}
+      userId={fallbackUserId}
+    />
   );
 };
 export default OptimizelyProviderProgressiveProfiling;

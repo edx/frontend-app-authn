@@ -69,7 +69,7 @@ describe('OptimizelyProviderProgressiveProfiling', () => {
     expect(screen.getByText('progressive-profiling-experiment')).toBeTruthy();
     expect(mockOptimizelyProvider).toHaveBeenCalledWith(
       expect.objectContaining({
-        user: { id: '42' },
+        user: expect.objectContaining({ id: '42' }),
       }),
     );
   });
@@ -85,7 +85,7 @@ describe('OptimizelyProviderProgressiveProfiling', () => {
     expect(screen.getByText('progressive-profiling-experiment')).toBeTruthy();
     expect(mockOptimizelyProvider).toHaveBeenCalledWith(
       expect.objectContaining({
-        user: { id: '123' },
+        user: expect.objectContaining({ id: '123' }),
       }),
     );
   });
