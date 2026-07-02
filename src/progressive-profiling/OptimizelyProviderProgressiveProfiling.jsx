@@ -1,3 +1,4 @@
+import React from 'react';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { useLocation } from 'react-router-dom';
 
