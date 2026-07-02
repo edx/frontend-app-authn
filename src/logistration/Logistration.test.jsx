@@ -11,7 +11,7 @@ import configureStore from 'redux-mock-store';
 import Logistration from './Logistration';
 import { clearThirdPartyAuthContextErrorMessage } from '../common-components/data/actions';
 import {
-  COMPLETE_STATE, LOGIN_PAGE, REGISTER_PAGE,
+ APP_NAME, COMPLETE_STATE, LOGIN_PAGE, REGISTER_PAGE,
 } from '../data/constants';
 import { backupLoginForm } from '../login/data/actions';
 import { backupRegistrationForm } from '../register/data/actions';
@@ -249,7 +249,7 @@ describe('Logistration', () => {
     expect(sendPageEvent).toHaveBeenCalledWith(
       'login_and_registration',
       'institution_login',
-      { app_name: 'authn_mfe' },
+      { app_name: APP_NAME },
     );
 
     mergeConfig({
