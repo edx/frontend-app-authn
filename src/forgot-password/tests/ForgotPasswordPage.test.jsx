@@ -241,6 +241,29 @@ describe('ForgotPasswordPage', () => {
     expect(successElement.textContent).toEqual(successMessage);
   });
 
+  it('should clear validation errors before submitting a valid email', () => {
+    store.dispatch = jest.fn(store.dispatch);
+    props = {
+      ...props,
+      emailValidationError: 'Enter your email',
+      email: '',
+    };
+
+    const { container } = render(reduxWrapper(<ForgotPasswordPage {...props} />));
+    const emailInput = screen.getByLabelText('Email');
+
+    fireEvent.change(emailInput, { target: { value: 'registered@example.com' } });
+    fireEvent.click(screen.getByText('Submit'));
+
+    expect(props.forgotPassword).toHaveBeenCalledWith('registered@example.com');
+    expect(store.dispatch).toHaveBeenCalledWith(setForgotPasswordFormData({
+      email: 'registered@example.com',
+      emailValidationError: '',
+    }));
+    expect(container.querySelector('.pgn__form-text-invalid')).toBeNull();
+    expect(container.querySelector('.alert-danger')).toBeNull();
+  });
+
   it('should display invalid password reset link error', () => {
     store = mockStore({
       ...initialState,

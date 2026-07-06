@@ -86,6 +86,9 @@ const ForgotPasswordPage = (props) => {
       props.setForgotPasswordFormData({ email, emailValidationError: error });
       windowScrollTo({ left: 0, top: 0, behavior: 'smooth' });
     } else {
+      setFormErrors('');
+      setValidationError('');
+      props.setForgotPasswordFormData({ email, emailValidationError: '' });
       props.forgotPassword(email);
     }
   };
