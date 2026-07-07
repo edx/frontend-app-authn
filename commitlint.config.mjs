@@ -34,8 +34,8 @@ const Configuration = {
     message => /^Revert ".*"( \(#\d+\))?/.test(message),
 
     // Temporary grandfathering for the malformed Copilot autofix commit already
-    // present in this PR's history. Remove this once commit d06aed3 is no longer
-    // part of the branch.
+    // present in this PR's history. TODO: remove this ignore after the branch is
+    // rebased or otherwise cleaned up so commit d06aed3 is no longer reachable.
     message => message.trimEnd() === legacyAutofixCommitMessage,
 
     // BTW: commitlint has a built-in list of ignores which are also applied.
