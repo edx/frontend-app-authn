@@ -1,3 +1,9 @@
+const legacyAutofixCommitMessage = [
+  'Potential fix for pull request finding',
+  '',
+  'Co-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>',
+].join('\n');
+
 const Configuration = {
   extends: ['@commitlint/config-conventional'],
 
@@ -30,7 +36,7 @@ const Configuration = {
     // Temporary grandfathering for the malformed Copilot autofix commit already
     // present in this PR's history. Remove this once commit d06aed3 is no longer
     // part of the branch.
-    message => /^Potential fix for pull request finding(?:\n\nCo-authored-by: Copilot Autofix powered by AI <175728472\+Copilot@users\.noreply\.github\.com>)?\n?$/.test(message),
+    message => message.trimEnd() === legacyAutofixCommitMessage,
 
     // BTW: commitlint has a built-in list of ignores which are also applied.
     // Those include the typical "Merged" messages, so those are implicitly ignored:
