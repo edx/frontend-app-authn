@@ -10,7 +10,7 @@ import configureStore from 'redux-mock-store';
 
 import { INTERNAL_SERVER_ERROR, LOGIN_PAGE } from '../../data/constants';
 import { PASSWORD_RESET } from '../../reset-password/data/constants';
-import { setForgotPasswordFormData } from '../data/actions';
+import { forgotPassword, setForgotPasswordFormData } from '../data/actions';
 import ForgotPasswordPage from '../ForgotPasswordPage';
 
 const mockedNavigator = jest.fn();
@@ -255,7 +255,7 @@ describe('ForgotPasswordPage', () => {
     fireEvent.change(emailInput, { target: { value: 'registered@example.com' } });
     fireEvent.click(screen.getByText('Submit'));
 
-    expect(props.forgotPassword).toHaveBeenCalledWith('registered@example.com');
+    expect(store.dispatch).toHaveBeenCalledWith(forgotPassword('registered@example.com'));
     expect(store.dispatch).toHaveBeenCalledWith(setForgotPasswordFormData({
       email: 'registered@example.com',
       emailValidationError: '',
