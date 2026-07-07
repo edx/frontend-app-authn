@@ -27,7 +27,9 @@ const Configuration = {
     //    Revert "introduce a bug" (#1234)
     message => /^Revert ".*"( \(#\d+\))?/.test(message),
 
-    // Allow the previously-generated Copilot autofix commit on this PR branch.
+    // Temporary grandfathering for the malformed Copilot autofix commit already
+    // present in this PR's history. Remove this once commit d06aed3 is no longer
+    // part of the branch.
     message => /^Potential fix for pull request finding(?:\n\nCo-authored-by: Copilot Autofix powered by AI <175728472\+Copilot@users\.noreply\.github\.com>)?\n?$/.test(message),
 
     // BTW: commitlint has a built-in list of ignores which are also applied.
