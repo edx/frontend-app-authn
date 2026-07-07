@@ -243,15 +243,15 @@ describe('ForgotPasswordPage', () => {
 
   it('should clear validation errors before submitting a valid email', () => {
     store.dispatch = jest.fn(store.dispatch);
-    props = {
-      ...props,
-      emailValidationError: 'Enter your email',
-      email: '',
-    };
 
     const { container } = render(reduxWrapper(<ForgotPasswordPage {...props} />));
-    const emailInput = screen.getByLabelText('Email');
 
+    // First submit an invalid/blank email to trigger the alert banner via local `formErrors`.
+    fireEvent.click(screen.getByText('Submit'));
+    expect(container.querySelector('.alert-danger')).not.toBeNull();
+
+    // Then resubmit with a valid email and verify the banner + validation error are cleared.
+    const emailInput = screen.getByLabelText('Email');
     fireEvent.change(emailInput, { target: { value: 'registered@example.com' } });
     fireEvent.click(screen.getByText('Submit'));
 
