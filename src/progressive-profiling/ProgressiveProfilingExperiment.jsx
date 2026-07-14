@@ -17,7 +17,6 @@ const ProgressiveProfilingExperiment = () => {
   const [decision, clientReady] = useDecision(PP_REDIRECT_EXPERIMENT_KEY, {
     autoUpdate: true,
   });
-  console.log('ProgressiveProfilingExperiment decision:', decision, 'clientReady:', clientReady);
   const authenticatedUser = getAuthenticatedUser() || location.state?.authenticatedUser;
   const registrationEmbedded = isHostAvailableInQueryParams();
   const hasWelcomeFlowContext = !!(location.state?.registrationResult || registrationEmbedded);

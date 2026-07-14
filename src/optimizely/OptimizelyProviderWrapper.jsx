@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { OptimizelyProvider } from '@optimizely/react-sdk';
 import PropTypes from 'prop-types';
@@ -13,7 +15,7 @@ const OptimizelyProviderWrapper = ({
   const authUserId = getAuthenticatedUser()?.userId;
   const resolvedUserId = userId ?? authUserId;
 
-  if (!optimizelyClient || !resolvedUserId) {
+   if (!optimizelyClient || resolvedUserId === null || resolvedUserId === undefined) {
     return <DefaultComponent {...props} />;
   }
 
