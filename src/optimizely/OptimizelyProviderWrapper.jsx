@@ -15,7 +15,7 @@ const OptimizelyProviderWrapper = ({
   const authUserId = getAuthenticatedUser()?.userId;
   const resolvedUserId = userId ?? authUserId;
 
-   if (!optimizelyClient || resolvedUserId === null || resolvedUserId === undefined) {
+  if (!optimizelyClient || resolvedUserId === null || resolvedUserId === undefined) {
     return <DefaultComponent {...props} />;
   }
 
