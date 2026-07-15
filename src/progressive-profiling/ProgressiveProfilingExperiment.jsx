@@ -14,7 +14,7 @@ import { isHostAvailableInQueryParams } from '../data/utils';
 
 const ProgressiveProfilingExperiment = () => {
   const location = useLocation();
-  const [decision, clientReady] = useDecision(PP_REDIRECT_EXPERIMENT_KEY, {
+  const [decision, clientReady, didTimeout] = useDecision(PP_REDIRECT_EXPERIMENT_KEY, {
     autoUpdate: true,
   });
   const authenticatedUser = getAuthenticatedUser() || location.state?.authenticatedUser;
@@ -39,9 +39,9 @@ const ProgressiveProfilingExperiment = () => {
     window.location.assign(dashboardUrl);
   }, [normalizedHomeUrl, shouldRedirectToWelcome]);
 
-  // Also wait for Optimizely client readiness before rendering the control component,
-  // to avoid triggering ProgressiveProfiling's own redirect logic prematurely.
-  if (!clientReady && !hasWelcomeFlowContext) {
+   // If there's no welcome-flow context, render ProgressiveProfiling immediately (preserving redirects).
+   // Otherwise, wait for Optimizely readiness to avoid rendering it too early during the welcome flow.
+  if ((!clientReady && !hasWelcomeFlowContext) || didTimeout) {
     return <ProgressiveProfilingComponent />;
   }
 
