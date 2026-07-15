@@ -4,7 +4,6 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import { getConfig } from '@edx/frontend-platform';
-import { sendPageEvent, sendTrackEvent } from '@edx/frontend-platform/analytics';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Form, StatefulButton } from '@openedx/paragon';
 import PropTypes from 'prop-types';
@@ -12,6 +11,14 @@ import { Helmet } from 'react-helmet';
 import Skeleton from 'react-loading-skeleton';
 import { Link } from 'react-router-dom';
 
+import AccountActivationMessage from './AccountActivationMessage';
+import {
+  ELEMENT_NAME,
+  ELEMENT_TEXT,
+  ELEMENT_TYPES,
+  PAGE_TYPES,
+} from '../cohesion/constants';
+import { setCohesionEventStates } from '../cohesion/data/actions';
 import {
   FormGroup,
   InstitutionLogistration,
@@ -19,7 +26,8 @@ import {
   RedirectLogistration,
   ThirdPartyAuthAlert,
 } from '../common-components';
-import AccountActivationMessage from './AccountActivationMessage';
+import LoginFailureMessage from './LoginFailure';
+import messages from './messages';
 import { getThirdPartyAuthContext } from '../common-components/data/actions';
 import { thirdPartyAuthContextSelector } from '../common-components/data/selectors';
 import EnterpriseSSO from '../common-components/EnterpriseSSO';
@@ -32,11 +40,13 @@ import {
   getTpaProvider,
   updatePathWithQueryParams,
 } from '../data/utils';
-import ResetPasswordSuccess from '../reset-password/ResetPasswordSuccess';
 import { backupLoginFormBegin, dismissPasswordResetBanner, loginRequest } from './data/actions';
+import { removeCookie } from '../data/utils/cookies';
+import ResetPasswordSuccess from '../reset-password/ResetPasswordSuccess';
 import { INVALID_FORM, TPA_AUTHENTICATION_FAILURE } from './data/constants';
-import LoginFailureMessage from './LoginFailure';
-import messages from './messages';
+import {
+  trackForgotPasswordLinkClick, trackLoginPageViewed, trackLoginSuccess,
+} from '../tracking/trackers/login';
 
 const DEFAULT_LOGIN_FORM_DATA = {
   formFields: { emailOrUsername: '', password: '' },
@@ -96,7 +106,7 @@ const LoginPage = ({
   const tpaHint = getTpaHint();
 
   useEffect(() => {
-    sendPageEvent('login_and_registration', 'login');
+    trackLoginPageViewed();
   }, []);
 
   useEffect(() => {
@@ -139,6 +149,13 @@ const LoginPage = ({
       }));
     }
   }, [thirdPartyErrorMessage]);
+
+  useEffect(() => {
+    if (loginResult.success) {
+      trackLoginSuccess();
+      removeCookie('ssoPipelineRedirectionDone');
+    }
+  }, [loginResult]);
 
   const validateFormFields = (payload) => {
     const {
@@ -183,6 +200,13 @@ const LoginPage = ({
       password: formData.password,
       ...queryParams,
     };
+    const eventData = {
+      pageType: PAGE_TYPES.SIGN_IN,
+      elementType: ELEMENT_TYPES.BUTTON,
+      webElementText: ELEMENT_TEXT.SIGN_IN,
+      webElementName: ELEMENT_NAME.SIGN_IN,
+    };
+    dispatch(setCohesionEventStates(eventData));
     dispatch(loginRequest(payload));
   };
 
@@ -203,9 +227,6 @@ const LoginPage = ({
       ...prevErrors,
       [name]: '',
     }));
-  };
-  const trackForgotPasswordLinkClick = () => {
-    sendTrackEvent('edx.bi.password-reset_form.toggled', { category: 'user-engagement' });
   };
 
   const {
@@ -246,6 +267,7 @@ const LoginPage = ({
         success={loginResult.success}
         redirectUrl={loginResult.redirectUrl}
         finishAuthUrl={finishAuthUrl}
+        currectProvider={currentProvider}
       />
       <div className="mw-xs mt-3 mb-2">
         <LoginFailureMessage

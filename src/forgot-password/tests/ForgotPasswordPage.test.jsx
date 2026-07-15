@@ -10,7 +10,7 @@ import configureStore from 'redux-mock-store';
 
 import { INTERNAL_SERVER_ERROR, LOGIN_PAGE } from '../../data/constants';
 import { PASSWORD_RESET } from '../../reset-password/data/constants';
-import { setForgotPasswordFormData } from '../data/actions';
+import { forgotPassword, setForgotPasswordFormData } from '../data/actions';
 import ForgotPasswordPage from '../ForgotPasswordPage';
 
 const mockedNavigator = jest.fn();
@@ -111,7 +111,7 @@ describe('ForgotPasswordPage', () => {
       forgotPassword: { status: INTERNAL_SERVER_ERROR },
     });
     const expectedMessage = 'We were unable to contact you.'
-                            + 'An error has occurred. Try refreshing the page, or check your internet connection.';
+      + 'An error has occurred. Try refreshing the page, or check your internet connection.';
 
     const { container } = render(reduxWrapper(<ForgotPasswordPage {...props} />));
 
@@ -231,14 +231,37 @@ describe('ForgotPasswordPage', () => {
     });
 
     const successMessage = 'Check your emailWe sent an email to  with instructions to reset your password. If you do not '
-                           + 'receive a password reset message after 1 minute, verify that you entered the correct email address,'
-                           + ' or check your spam folder. If you need further assistance, contact technical support.';
+      + 'receive a password reset message after 1 minute, verify that you entered the correct email address,'
+      + ' or check your spam folder. If you need further assistance, contact technical support.';
 
     const { container } = render(reduxWrapper(<ForgotPasswordPage {...props} />));
     const successElement = findByTextContent(container, successMessage);
 
     expect(successElement).toBeDefined();
     expect(successElement.textContent).toEqual(successMessage);
+  });
+
+  it('should clear validation errors before submitting a valid email', () => {
+    store.dispatch = jest.fn(store.dispatch);
+
+    const { container } = render(reduxWrapper(<ForgotPasswordPage {...props} />));
+
+    // First submit an invalid/blank email to trigger the alert banner via local `formErrors`.
+    fireEvent.click(screen.getByText('Submit'));
+    expect(container.querySelector('.alert-danger')).not.toBeNull();
+
+    // Then resubmit with a valid email and verify the banner + validation error are cleared.
+    const emailInput = screen.getByLabelText('Email');
+    fireEvent.change(emailInput, { target: { value: 'registered@example.com' } });
+    fireEvent.click(screen.getByText('Submit'));
+
+    expect(store.dispatch).toHaveBeenCalledWith(forgotPassword('registered@example.com'));
+    expect(store.dispatch).toHaveBeenCalledWith(setForgotPasswordFormData({
+      email: 'registered@example.com',
+      emailValidationError: '',
+    }));
+    expect(container.querySelector('.pgn__form-text-invalid')).toBeNull();
+    expect(container.querySelector('.alert-danger')).toBeNull();
   });
 
   it('should display invalid password reset link error', () => {
@@ -249,8 +272,8 @@ describe('ForgotPasswordPage', () => {
       },
     });
     const successMessage = 'Invalid password reset link'
-                            + 'This password reset link is invalid. It may have been used already. '
-                            + 'Enter your email below to receive a new link.';
+      + 'This password reset link is invalid. It may have been used already. '
+      + 'Enter your email below to receive a new link.';
 
     const { container } = render(reduxWrapper(<ForgotPasswordPage {...props} />));
     const successElement = findByTextContent(container, successMessage);
