@@ -39,8 +39,8 @@ const ProgressiveProfilingExperiment = () => {
     window.location.assign(dashboardUrl);
   }, [normalizedHomeUrl, shouldRedirectToWelcome]);
 
-   // If there's no welcome-flow context, render ProgressiveProfiling immediately (preserving redirects).
-   // Otherwise, wait for Optimizely readiness to avoid rendering it too early during the welcome flow.
+  // If there's no welcome-flow context, render ProgressiveProfiling immediately (preserving redirects).
+  // Otherwise, wait for Optimizely readiness to avoid rendering it too early during the welcome flow.
   if ((!clientReady && !hasWelcomeFlowContext) || didTimeout) {
     return <ProgressiveProfilingComponent />;
   }
