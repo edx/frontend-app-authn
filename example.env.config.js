@@ -49,6 +49,8 @@ module.exports = {
   TOS_LINK: 'http://localhost:18000/tos',
   PRIVACY_POLICY: 'http://localhost:18000/privacy',
   AUTHN_PROGRESSIVE_PROFILING_SUPPORT_LINK: 'http://localhost:1999/welcome',
+  OPTIMIZELY_FULL_STACK_SDK_KEY: '',
+  HOME_URL: 'http://localhost:1996',
   BANNER_IMAGE_LARGE: '',
   BANNER_IMAGE_MEDIUM: '',
   BANNER_IMAGE_SMALL: '',
