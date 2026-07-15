@@ -17,6 +17,7 @@ const ProgressiveProfilingExperiment = () => {
   const [decision, clientReady] = useDecision(PP_REDIRECT_EXPERIMENT_KEY, {
     autoUpdate: true,
   });
+  console.log('ProgressiveProfilingExperiment:', decision, 'clientReady:', clientReady);
   const authenticatedUser = getAuthenticatedUser() || location.state?.authenticatedUser;
   const registrationEmbedded = isHostAvailableInQueryParams();
   const hasWelcomeFlowContext = !!(location.state?.registrationResult || registrationEmbedded);
@@ -41,6 +42,10 @@ const ProgressiveProfilingExperiment = () => {
 
   // Also wait for Optimizely client readiness before rendering the control component,
   // to avoid triggering ProgressiveProfiling's own redirect logic prematurely.
+  if (!clientReady && !hasWelcomeFlowContext) {
+    return <ProgressiveProfilingComponent />;
+  }
+
   if (!clientReady) {
     return null;
   }
