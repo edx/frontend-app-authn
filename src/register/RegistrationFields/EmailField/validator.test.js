@@ -1,10 +1,9 @@
 import { COMMON_EMAIL_PROVIDERS } from './constants';
-import {
+import validateEmail, {
   EMAIL_MAX_LENGTH,
   getLevenshteinSuggestion,
   getSuggestionForInvalidEmail,
 } from './validator';
-import validateEmail from './validator';
 
 const formatMessage = descriptor => descriptor.defaultMessage;
 
@@ -45,6 +44,11 @@ describe('Email Validators Utils', () => {
     it('should validate a trimmed email address', () => {
       const { fieldError } = validateEmail('  test.user@example.com  ', null, formatMessage);
       expect(fieldError).toEqual('');
+    });
+
+    it('should not set confirm email mismatch for whitespace-only confirm email value', () => {
+      const { confirmEmailError } = validateEmail('test.user@example.com', '   ', formatMessage);
+      expect(confirmEmailError).toEqual('');
     });
 
     it('should reject email longer than 254 chars', () => {

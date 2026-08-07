@@ -5,11 +5,11 @@ import {
   DEFAULT_SERVICE_PROVIDER_DOMAINS,
   DEFAULT_TOP_LEVEL_DOMAINS,
 } from './constants';
+import { VALID_EMAIL_REGEX } from '../../../data/constants';
 import messages from '../../messages';
 
 export const EMAIL_MAX_LENGTH = 254;
-// RFC 5321-compatible frontend email format validation.
-export const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+export const emailRegex = new RegExp(VALID_EMAIL_REGEX, 'i');
 
 export const getLevenshteinSuggestion = (word, knownWords, similarityThreshold = 4) => {
   if (!word) {
@@ -91,7 +91,9 @@ export const validateEmailAddress = (value, username, domainName) => {
 
 const validateEmail = (value, confirmEmailValue, formatMessage) => {
   const normalizedValue = value?.trim() || '';
-  const normalizedConfirmEmailValue = confirmEmailValue?.trim?.() || confirmEmailValue;
+  const normalizedConfirmEmailValue = typeof confirmEmailValue === 'string'
+    ? confirmEmailValue.trim()
+    : confirmEmailValue;
   let fieldError = '';
   let confirmEmailError = '';
   let emailSuggestion = { suggestion: '', type: '' };
