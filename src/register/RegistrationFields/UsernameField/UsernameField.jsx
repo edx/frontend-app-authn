@@ -55,10 +55,10 @@ const UsernameField = (props) => {
   }, [handleChange, usernameSuggestions, value]);
 
   const handleOnBlur = (event) => {
-    const { value } = event.target;
-    const username = value.trim();
+    const inputValue = event.target.value;
+    const username = inputValue.trim();
 
-    if (username !== value) {
+    if (username !== inputValue) {
       handleChange({ target: { name: 'username', value: username } });
     }
 
