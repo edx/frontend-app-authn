@@ -48,7 +48,17 @@ const EmailField = (props) => {
 
   const handleOnBlur = (e) => {
     const { value } = e.target;
-    const { fieldError, confirmEmailError, suggestion } = validateEmail(value, confirmEmailValue, formatMessage);
+    const normalizedEmail = value.trim();
+
+    if (normalizedEmail !== value) {
+      handleChange({ target: { name: 'email', value: normalizedEmail } });
+    }
+
+    const { fieldError, confirmEmailError, suggestion } = validateEmail(
+      normalizedEmail,
+      confirmEmailValue,
+      formatMessage,
+    );
 
     if (confirmEmailError) {
       handleErrorChange('confirm_email', confirmEmailError);
@@ -60,7 +70,7 @@ const EmailField = (props) => {
     if (fieldError) {
       handleErrorChange('email', fieldError);
     } else if (!validationApiRateLimited) {
-      dispatch(fetchRealtimeValidations({ email: value }));
+      dispatch(fetchRealtimeValidations({ email: normalizedEmail }));
     }
   };
 

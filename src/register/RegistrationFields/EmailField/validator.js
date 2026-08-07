@@ -5,10 +5,11 @@ import {
   DEFAULT_SERVICE_PROVIDER_DOMAINS,
   DEFAULT_TOP_LEVEL_DOMAINS,
 } from './constants';
-import { VALID_EMAIL_REGEX } from '../../../data/constants';
 import messages from '../../messages';
 
-export const emailRegex = new RegExp(VALID_EMAIL_REGEX, 'i');
+export const EMAIL_MAX_LENGTH = 254;
+// RFC 5321-compatible frontend email format validation.
+export const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
 
 export const getLevenshteinSuggestion = (word, knownWords, similarityThreshold = 4) => {
   if (!word) {
@@ -89,33 +90,35 @@ export const validateEmailAddress = (value, username, domainName) => {
 };
 
 const validateEmail = (value, confirmEmailValue, formatMessage) => {
+  const normalizedValue = value?.trim() || '';
+  const normalizedConfirmEmailValue = confirmEmailValue?.trim?.() || confirmEmailValue;
   let fieldError = '';
   let confirmEmailError = '';
   let emailSuggestion = { suggestion: '', type: '' };
 
-  if (!value) {
+  if (!normalizedValue) {
     fieldError = formatMessage(messages['empty.email.field.error']);
-  } else if (value.length <= 2) {
+  } else if (normalizedValue.length <= 2 || normalizedValue.length > EMAIL_MAX_LENGTH) {
     fieldError = formatMessage(messages['email.invalid.format.error']);
   } else {
-    const [username, domainName] = value.split('@');
+    const [username, domainName] = normalizedValue.split('@');
     // Check if email address is invalid. If we have a suggestion for invalid email
     // provide that along with the error message.
-    if (!emailRegex.test(value)) {
+    if (!emailRegex.test(normalizedValue)) {
       fieldError = formatMessage(messages['email.invalid.format.error']);
       emailSuggestion = {
         suggestion: getSuggestionForInvalidEmail(domainName, username),
         type: 'error',
       };
     } else {
-      const response = validateEmailAddress(value, username, domainName);
+      const response = validateEmailAddress(normalizedValue, username, domainName);
       if (response.hasError) {
         fieldError = formatMessage(messages['email.invalid.format.error']);
         delete response.hasError;
       }
       emailSuggestion = { ...response };
 
-      if (confirmEmailValue && value !== confirmEmailValue) {
+      if (normalizedConfirmEmailValue && normalizedValue !== normalizedConfirmEmailValue) {
         confirmEmailError = formatMessage(messages['email.do.not.match']);
       }
     }

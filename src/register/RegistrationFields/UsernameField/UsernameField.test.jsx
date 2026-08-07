@@ -67,7 +67,7 @@ describe('UsernameField', () => {
 
   describe('Test Username Field', () => {
     const fieldValidation = {
-      username: 'Username must be between 2 and 30 characters',
+      username: 'Username must be between 3 and 50 characters',
     };
 
     it('should run username field validation when onBlur is fired', () => {
@@ -92,7 +92,20 @@ describe('UsernameField', () => {
       expect(props.handleErrorChange).toHaveBeenCalledTimes(1);
       expect(props.handleErrorChange).toHaveBeenCalledWith(
         'username',
-        'Usernames can only contain letters (A-Z, a-z), numerals (0-9), underscores (_), and hyphens (-). Usernames cannot contain spaces',
+        'Usernames can only contain letters (A-Z, a-z), numerals (0-9), underscores (_), hyphens (-), and periods (.). Usernames cannot contain spaces or disallowed symbols.',
+      );
+    });
+
+    it('should reject usernames with obvious injection patterns', () => {
+      const { container } = render(routerWrapper(reduxWrapper(<UsernameField {...props} />)));
+
+      const usernameField = container.querySelector('input#username');
+      fireEvent.blur(usernameField, { target: { value: 'test--user', name: 'username' } });
+
+      expect(props.handleErrorChange).toHaveBeenCalledTimes(1);
+      expect(props.handleErrorChange).toHaveBeenCalledWith(
+        'username',
+        'Usernames can only contain letters (A-Z, a-z), numerals (0-9), underscores (_), hyphens (-), and periods (.). Usernames cannot contain spaces or disallowed symbols.',
       );
     });
 
@@ -132,6 +145,19 @@ describe('UsernameField', () => {
       expect(store.dispatch).toHaveBeenCalledWith(fetchRealtimeValidations({ username: 'test' }));
     });
 
+    it('should trim username on blur before running backend validation', () => {
+      store.dispatch = jest.fn(store.dispatch);
+      const { container } = render(routerWrapper(reduxWrapper(<UsernameField {...props} />)));
+
+      const usernameField = container.querySelector('input#username');
+      fireEvent.blur(usernameField, { target: { value: ' test.user ', name: 'username' } });
+
+      expect(props.handleChange).toHaveBeenCalledWith(
+        { target: { name: 'username', value: 'test.user' } },
+      );
+      expect(store.dispatch).toHaveBeenCalledWith(fetchRealtimeValidations({ username: 'test.user' }));
+    });
+
     it('should remove space from the start of username on change', () => {
       const { container } = render(routerWrapper(reduxWrapper(<UsernameField {...props} />)));
       const usernameField = container.querySelector('input#username');
@@ -143,11 +169,11 @@ describe('UsernameField', () => {
       );
     });
 
-    it('should not set username if it is more than 30 character long', () => {
+    it('should not set username if it is more than 50 character long', () => {
       const { container } = render(routerWrapper(reduxWrapper(<UsernameField {...props} />)));
 
       const usernameField = container.querySelector('input#username');
-      fireEvent.change(usernameField, { target: { value: 'why_this_is_not_valid_username_', name: 'username' } });
+      fireEvent.change(usernameField, { target: { value: 'this_username_is_more_than_fifty_characters_long_1234', name: 'username' } });
 
       expect(props.handleChange).toHaveBeenCalledTimes(0);
     });

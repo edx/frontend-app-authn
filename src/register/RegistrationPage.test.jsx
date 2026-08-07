@@ -179,7 +179,7 @@ describe('RegistrationPage', () => {
 
     const emptyFieldValidation = {
       name: 'Enter your full name',
-      username: 'Username must be between 2 and 30 characters',
+      username: 'Username must be between 3 and 50 characters',
       email: 'Enter your email',
       password: 'Password criteria has not been met',
       country: 'Select your country or region of residence',

@@ -1,8 +1,12 @@
 import { COMMON_EMAIL_PROVIDERS } from './constants';
 import {
+  EMAIL_MAX_LENGTH,
   getLevenshteinSuggestion,
   getSuggestionForInvalidEmail,
 } from './validator';
+import validateEmail from './validator';
+
+const formatMessage = descriptor => descriptor.defaultMessage;
 
 describe('Email Validators Utils', () => {
   describe('getLevenshteinSuggestion Tests', () => {
@@ -34,6 +38,20 @@ describe('Email Validators Utils', () => {
     it('test getSuggestionForInvalidEmail returns empty for totally different domain', () => {
       const output = getSuggestionForInvalidEmail('invalid-domain', 'username');
       expect(output).toEqual('');
+    });
+  });
+
+  describe('validateEmail Tests', () => {
+    it('should validate a trimmed email address', () => {
+      const { fieldError } = validateEmail('  test.user@example.com  ', null, formatMessage);
+      expect(fieldError).toEqual('');
+    });
+
+    it('should reject email longer than 254 chars', () => {
+      const localPartLength = EMAIL_MAX_LENGTH - '@example.com'.length + 1;
+      const oversizedEmail = `${'a'.repeat(localPartLength)}@example.com`;
+      const { fieldError } = validateEmail(oversizedEmail, null, formatMessage);
+      expect(fieldError).toEqual('Enter a valid email address');
     });
   });
 });
