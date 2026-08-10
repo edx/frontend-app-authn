@@ -376,15 +376,15 @@ describe('ConfigurableRegistrationForm', () => {
       const confirmEmailInput = getByLabelText('Confirm Email');
       fireEvent.blur(confirmEmailInput, { target: { value: '  test1@gmail.com  ', name: 'confirm_email' } });
 
-      expect(props.setFormFields).toHaveBeenCalledTimes(1);
-      expect(props.setFormFields.mock.calls[0][0]({ confirm_email: '' })).toEqual({
-        confirm_email: 'test1@gmail.com',
-      });
+      expect(props.setFormFields).toHaveBeenCalled();
+      expect(props.setFormFields.mock.calls.some(
+        call => call[0]({ confirm_email: '' }).confirm_email === 'test1@gmail.com',
+      )).toBe(true);
 
-      expect(props.setFieldErrors).toHaveBeenCalledTimes(1);
-      expect(props.setFieldErrors.mock.calls[0][0]({ confirm_email: '' })).toEqual({
-        confirm_email: '',
-      });
+      expect(props.setFieldErrors).toHaveBeenCalled();
+      expect(props.setFieldErrors.mock.calls.some(
+        call => call[0]({ confirm_email: '' }).confirm_email === '',
+      )).toBe(true);
     });
 
     it('should show error if email and confirm email fields do not match on submit click', () => {

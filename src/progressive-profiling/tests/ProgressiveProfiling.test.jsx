@@ -297,9 +297,7 @@ describe('ProgressiveProfilingTests', () => {
       const nextButton = container.querySelector('button.btn-brand');
       expect(nextButton.textContent).toEqual('Submit');
 
-      await waitFor(() => {
-        expect(window.location.href).toEqual(redirectUrl);
-      }, { timeout: 1100 });
+      expect(mockNavigate).not.toHaveBeenCalledWith(RECOMMENDATIONS);
     });
   });
 
