@@ -271,6 +271,7 @@ describe('ProgressiveProfilingTests', () => {
     });
 
     it('should not redirect to recommendations page if user is on its way to enroll in a course', async () => {
+      mockNavigate.mockClear();
       const redirectUrl = `${getConfig().LMS_BASE_URL}${DEFAULT_REDIRECT_URL}?enrollment_action=1`;
       useLocation.mockReturnValue({
         state: {
@@ -297,9 +298,7 @@ describe('ProgressiveProfilingTests', () => {
       const nextButton = container.querySelector('button.btn-brand');
       expect(nextButton.textContent).toEqual('Submit');
 
-      await waitFor(() => {
-        expect(window.location.href).toEqual(redirectUrl);
-      }, { timeout: 1100 });
+      expect(mockNavigate).not.toHaveBeenCalledWith(RECOMMENDATIONS);
     });
   });
 

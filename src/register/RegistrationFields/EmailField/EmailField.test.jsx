@@ -126,6 +126,19 @@ describe('EmailField', () => {
       expect(store.dispatch).toHaveBeenCalledWith(fetchRealtimeValidations({ email: 'test@gmail.com' }));
     });
 
+    it('should trim email on blur before running backend validation', () => {
+      store.dispatch = jest.fn(store.dispatch);
+      const { container } = render(routerWrapper(reduxWrapper(<EmailField {...props} />)));
+
+      const emailInput = container.querySelector('input#email');
+      fireEvent.blur(emailInput, { target: { value: ' test@gmail.com ', name: 'email' } });
+
+      expect(props.handleChange).toHaveBeenCalledWith(
+        { target: { name: 'email', value: 'test@gmail.com' } },
+      );
+      expect(store.dispatch).toHaveBeenCalledWith(fetchRealtimeValidations({ email: 'test@gmail.com' }));
+    });
+
     it('should give email suggestions for common service provider domain typos', () => {
       const { container } = render(routerWrapper(reduxWrapper(<EmailField {...props} />)));
 

@@ -355,6 +355,38 @@ describe('ConfigurableRegistrationForm', () => {
       expect(confirmEmailErrorElement.textContent).toEqual('The email addresses do not match.');
     });
 
+    it('should trim confirm email on blur and not show mismatch when only whitespace differs', () => {
+      props = {
+        ...props,
+        email: 'test1@gmail.com',
+        formFields: {
+          confirm_email: '',
+        },
+        fieldDescriptions: {
+          confirm_email: {
+            name: 'confirm_email', type: 'text', label: 'Confirm Email',
+          },
+        },
+      };
+
+      const { getByLabelText } = render(routerWrapper(reduxWrapper(
+        <ConfigurableRegistrationForm {...props} />,
+      )));
+
+      const confirmEmailInput = getByLabelText('Confirm Email');
+      fireEvent.blur(confirmEmailInput, { target: { value: '  test1@gmail.com  ', name: 'confirm_email' } });
+
+      expect(props.setFormFields).toHaveBeenCalled();
+      expect(props.setFormFields.mock.calls.some(
+        call => call[0]({ confirm_email: '' }).confirm_email === 'test1@gmail.com',
+      )).toBe(true);
+
+      expect(props.setFieldErrors).toHaveBeenCalled();
+      expect(props.setFieldErrors.mock.calls.some(
+        call => call[0]({ confirm_email: '' }).confirm_email === '',
+      )).toBe(true);
+    });
+
     it('should show error if email and confirm email fields do not match on submit click', () => {
       const formPayload = {
         name: 'Petro',
