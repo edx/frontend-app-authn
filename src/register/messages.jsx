@@ -88,7 +88,7 @@ const messages = defineMessages({
   },
   'empty.username.field.error': {
     id: 'empty.username.field.error',
-    defaultMessage: 'Username must be between 2 and 30 characters',
+    defaultMessage: 'Username must be between 3 and 50 characters',
     description: 'Error message for empty username field',
   },
   'empty.password.field.error': {
@@ -118,7 +118,7 @@ const messages = defineMessages({
   },
   'username.validation.message': {
     id: 'username.validation.message',
-    defaultMessage: 'Username must be between 2 and 30 characters',
+    defaultMessage: 'Username must be between 3 and 50 characters',
     description: 'Error message for empty username field',
   },
   'name.validation.message': {
@@ -133,7 +133,7 @@ const messages = defineMessages({
   },
   'username.format.validation.message': {
     id: 'username.format.validation.message',
-    defaultMessage: 'Usernames can only contain letters (A-Z, a-z), numerals (0-9), underscores (_), and hyphens (-). Usernames cannot contain spaces',
+    defaultMessage: 'Usernames can only contain letters (A-Z, a-z), numerals (0-9), underscores (_), hyphens (-), and periods (.). Usernames cannot contain spaces or disallowed symbols.',
     description: 'Validation message that appears when username format is invalid',
   },
   // Error messages

@@ -236,6 +236,13 @@ const RegistrationPage = (props) => {
     const totalRegistrationTime = (Date.now() - formStartTime) / 1000;
     let payload = { ...formFields, app_name: APP_NAME };
 
+    if (typeof payload.email === 'string') {
+      payload.email = payload.email.trim();
+    }
+    if (typeof payload.username === 'string') {
+      payload.username = payload.username.trim();
+    }
+
     if (currentProvider) {
       delete payload.password;
       payload.social_auth_provider = currentProvider;

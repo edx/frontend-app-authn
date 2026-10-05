@@ -133,10 +133,17 @@ const ConfigurableRegistrationForm = (props) => {
 
   const handleOnBlur = (event) => {
     const { name, value } = event.target;
+    const normalizedValue = typeof value === 'string' ? value.trim() : value;
+    const normalizedEmail = typeof email === 'string' ? email.trim() : email;
+
+    if (typeof value === 'string' && normalizedValue !== value) {
+      setFormFields(prevState => ({ ...prevState, [name]: normalizedValue }));
+    }
+
     let error = '';
-    if ((!value || !value.trim()) && fieldDescriptions[name]?.error_message) {
+    if (!normalizedValue && fieldDescriptions[name]?.error_message) {
       error = fieldDescriptions[name].error_message;
-    } else if (name === 'confirm_email' && value !== email) {
+    } else if (name === 'confirm_email' && normalizedValue !== normalizedEmail) {
       error = formatMessage(messages['email.do.not.match']);
     }
     setFieldErrors(prevErrors => ({ ...prevErrors, [name]: error }));

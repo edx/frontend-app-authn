@@ -55,7 +55,13 @@ const UsernameField = (props) => {
   }, [handleChange, usernameSuggestions, value]);
 
   const handleOnBlur = (event) => {
-    const { value: username } = event.target;
+    const inputValue = event.target.value;
+    const username = inputValue.trim();
+
+    if (username !== inputValue) {
+      handleChange({ target: { name: 'username', value: username } });
+    }
+
     const fieldError = validateUsername(username, formatMessage);
     if (fieldError) {
       handleErrorChange('username', fieldError);
@@ -66,7 +72,7 @@ const UsernameField = (props) => {
 
   const handleOnChange = (event) => {
     let username = event.target.value;
-    if (username.length > 30) {
+    if (username.length > 50) {
       return;
     }
     if (event.target.value.startsWith(' ')) {
