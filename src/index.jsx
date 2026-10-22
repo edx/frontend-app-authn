@@ -10,6 +10,7 @@ import { ErrorPage } from '@edx/frontend-platform/react';
 import { createRoot } from 'react-dom/client';
 
 import configuration from './config';
+import AuthnSegmentAnalyticsService from './data/segment/AuthnSegmentAnalyticsService';
 import messages from './i18n';
 import MainApp from './MainApp';
 
@@ -40,4 +41,5 @@ initialize({
     },
   },
   messages,
+  analyticsService: AuthnSegmentAnalyticsService,
 });
