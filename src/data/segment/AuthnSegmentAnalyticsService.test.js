@@ -2,6 +2,7 @@ import { SegmentAnalyticsService } from '@edx/frontend-platform/analytics';
 
 import AuthnSegmentAnalyticsService, {
   ANONYMOUS_IDENTIFY_TIMEOUT,
+  getQueryStringSegmentUserId,
   getStoredSegmentUserId,
   STALE_USER_ID_TIMEOUT,
 } from './AuthnSegmentAnalyticsService';
@@ -11,6 +12,9 @@ const createService = (ServiceClass, segmentKey = 'test-key') => new ServiceClas
   loggingService: { logError: jest.fn() },
   config: { LMS_BASE_URL: 'http://localhost:18000', SEGMENT_KEY: segmentKey },
 });
+
+// setupTest.js replaces window.location with a URL object.
+const setUrl = (path) => { window.location.href = new URL(path, 'https://authn.edx.org').href; };
 
 const queuedMethods = () => global.analytics.map(([method]) => method);
 
@@ -123,6 +127,69 @@ describe('AuthnSegmentAnalyticsService', () => {
       expect(service.segmentInitialized).toBe(false);
       expect(queuedMethods()).not.toContain('reset');
     });
+
+    it('still resets the stale user id when analytics.js becomes ready after the extra wait', async () => {
+      jest.advanceTimersByTime(STALE_USER_ID_TIMEOUT);
+      await Promise.resolve();
+      expect(service.segmentInitialized).toBe(false);
+
+      // Other scripts (e.g. the Xpert chatbot) still send through window.analytics.
+      const reset = jest.fn();
+      global.analytics.user = () => ({ id: () => '12345' });
+      global.analytics.reset = reset;
+      readyCallback();
+
+      expect(reset).toHaveBeenCalled();
+      expect(service.segmentInitialized).toBe(false);
+    });
+  });
+
+  describe('when the URL has ?ajs_uid= and analytics.js is slow', () => {
+    afterEach(() => {
+      setUrl('/');
+    });
+
+    it('does not send the page event under the URL user id', async () => {
+      setUrl('/register?ajs_uid=old-user');
+      let readyCallback;
+      let currentUserId = null;
+      const sentPageUserIds = [];
+      const service = createService(AuthnSegmentAnalyticsService);
+      global.analytics.ready = (callback) => { readyCallback = callback; };
+      let resolved = false;
+      service.identifyAnonymousUser().then(() => { resolved = true; });
+
+      jest.advanceTimersByTime(ANONYMOUS_IDENTIFY_TIMEOUT);
+      await Promise.resolve();
+      // Storage is empty, but events must not be released yet.
+      expect(resolved).toBe(false);
+
+      // analytics-next load order: flushQueryString identifies ajs_uid, then queued calls
+      // (including our ready callback) are replayed.
+      currentUserId = 'old-user';
+      global.analytics = {
+        user: () => ({ id: () => currentUserId }),
+        reset: () => { currentUserId = null; },
+        page: () => { sentPageUserIds.push(currentUserId); },
+      };
+      readyCallback();
+      await Promise.resolve();
+      expect(resolved).toBe(true);
+
+      service.sendPageEvent('login_and_registration', 'register', { app_name: 'authn_mfe' });
+      expect(sentPageUserIds).toEqual([null]);
+    });
+
+    it('disables Segment if analytics.js is still not ready after the extra wait', async () => {
+      setUrl('/register?ajs_uid=old-user');
+      const service = createService(AuthnSegmentAnalyticsService);
+      global.analytics.ready = () => {};
+      const identifyPromise = service.identifyAnonymousUser();
+      jest.advanceTimersByTime(ANONYMOUS_IDENTIFY_TIMEOUT + STALE_USER_ID_TIMEOUT);
+      await identifyPromise;
+
+      expect(service.segmentInitialized).toBe(false);
+    });
   });
 
   it('does not reset the anonymous id when there is no stale user id', async () => {
@@ -227,5 +294,28 @@ describe('getStoredSegmentUserId', () => {
   it('uses analytics.user() once analytics.js has loaded', () => {
     global.analytics = { user: () => ({ id: () => 'loaded-user' }) };
     expect(getStoredSegmentUserId()).toBe('loaded-user');
+  });
+});
+
+describe('getQueryStringSegmentUserId', () => {
+  afterEach(() => {
+    setUrl('/');
+  });
+
+  it('reads ajs_uid from the query string', () => {
+    setUrl('/register?next=%2Fdashboard&ajs_uid=old-user');
+    expect(getQueryStringSegmentUserId()).toBe('old-user');
+  });
+
+  it('reads ajs_uid from the hash when there is no query string', () => {
+    setUrl('/register#section?ajs_uid=old-user');
+    expect(getQueryStringSegmentUserId()).toBe('old-user');
+  });
+
+  it('returns null when ajs_uid is missing or empty', () => {
+    setUrl('/register?ajs_aid=anon');
+    expect(getQueryStringSegmentUserId()).toBeNull();
+    setUrl('/register?ajs_uid=');
+    expect(getQueryStringSegmentUserId()).toBeNull();
   });
 });

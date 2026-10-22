@@ -62,6 +62,23 @@ export const getStoredSegmentUserId = () => {
 };
 
 /**
+ * Returns the user id passed as ?ajs_uid=, which analytics.js identifies (Segment's querystring
+ * API) before replaying calls queued on the snippet stub. Like analytics.js, reads the hash's
+ * query string when the URL has no search part.
+ */
+export const getQueryStringSegmentUserId = () => {
+  try {
+    const { search, hash } = global.location;
+    const queryString = search || hash.replace(/(?=#).*(?=\?)/, '');
+    return new URLSearchParams(queryString).get('ajs_uid') || null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const hasPreviousSegmentIdentity = () => !!(getStoredSegmentUserId() || getQueryStringSegmentUserId());
+
+/**
  * Replaces SegmentAnalyticsService.identifyAnonymousUser from @edx/frontend-platform, which
  * disables Segment (segmentInitialized = false) if Google Analytics / GTM globals are not present
  * 2 seconds after it is called. Every page/track event sent after that point is silently dropped,
@@ -82,8 +99,9 @@ export const getStoredSegmentUserId = () => {
  * A previous user's id must be reset before any event is sent. reset() is never queued on the
  * stub: analytics.js replays queued calls grouped by method, so a track() queued earlier by
  * another script (e.g. a GTM tag) would put all track() calls ahead of the reset. Instead, when a
- * stale user id exists, we keep waiting for ready() (which resets), as the parent class does,
- * for at most STALE_USER_ID_TIMEOUT before disabling Segment.
+ * previous identity exists (a stored user id, or ?ajs_uid= which analytics.js applies before
+ * replaying queued calls), we keep waiting for ready() (which resets), as the parent class does,
+ * for at most STALE_USER_ID_TIMEOUT before disabling this service.
  *
  * Delete this class once the timer is fixed upstream. Until then, re-check
  * SegmentAnalyticsService.identifyAnonymousUser on every @edx/frontend-platform upgrade, since
@@ -96,17 +114,18 @@ class AuthnSegmentAnalyticsService extends SegmentAnalyticsService {
     }
 
     return new Promise((resolve) => {
-      // Set by whichever of ready() or the timeout runs first. Once set, the app may render and
-      // send events, so the other must not reset() (that would change anonymous_id mid-visit).
-      let isSettled = false;
+      let isReady = false;
+      // Set when the timeout lets the app send events with Segment enabled. After that, a user
+      // id can only come from the visitor authenticating, which must not be reset, and a reset
+      // would also change anonymous_id mid-visit.
+      let areEventsReleased = false;
 
       global.analytics.ready(() => {
-        if (isSettled) {
-          return;
-        }
-        isSettled = true;
-        // Reset any user id left over from a previous authenticated session.
-        if (global.analytics.user().id()) {
+        isReady = true;
+        // Reset any user id left over from a previous authenticated session. This also runs
+        // after the stale-identity fallback below has disabled this service, because other
+        // scripts can still send events through window.analytics.
+        if (!areEventsReleased && global.analytics.user().id()) {
           global.analytics.reset();
         }
         this.hasIdentifyBeenCalled = true;
@@ -116,22 +135,21 @@ class AuthnSegmentAnalyticsService extends SegmentAnalyticsService {
       document.addEventListener('segmentFailed', resolve);
 
       setTimeout(() => {
-        if (isSettled) {
+        if (isReady) {
           return;
         }
-        if (getStoredSegmentUserId()) {
+        if (hasPreviousSegmentIdentity()) {
           setTimeout(() => {
-            if (isSettled) {
+            if (isReady) {
               return;
             }
-            isSettled = true;
             // Drop events rather than attribute them to the previous user.
             this.segmentInitialized = false;
             resolve();
           }, STALE_USER_ID_TIMEOUT);
           return;
         }
-        isSettled = true;
+        areEventsReleased = true;
         // Segment assigns an anonymousId on load, so queued page/track calls are valid
         // without an explicit identify.
         this.hasIdentifyBeenCalled = true;
