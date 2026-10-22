@@ -149,8 +149,17 @@ describe('AuthnSegmentAnalyticsService', () => {
       setUrl('/');
     });
 
-    it('does not send the page event under the URL user id', async () => {
-      setUrl('/register?ajs_uid=old-user');
+    // Each URL makes analytics-next 1.84.3 identify old-user.
+    it.each([
+      '/register?ajs_uid=old-user',
+      '/register?ajs_uid=&ajs_uid=old-user',
+      '/register?ajs_uid=someone&ajs_uid=old-user',
+      '/register?ajs%5Fuid=&ajs_uid=old-user',
+      '/register?ajs_uid=old-user&ajs%5Fuid=',
+      '/register?ajs_uid=old%2Duser',
+      '/register#section?ajs_uid=&ajs_uid=old-user',
+    ])('does not send the page event under the URL user id (%s)', async (url) => {
+      setUrl(url);
       let readyCallback;
       let currentUserId = null;
       const sentPageUserIds = [];
@@ -189,6 +198,22 @@ describe('AuthnSegmentAnalyticsService', () => {
       await identifyPromise;
 
       expect(service.segmentInitialized).toBe(false);
+    });
+
+    // analytics-next 1.84.3 identifies no one for these URLs, so there is nothing to wait for.
+    it.each([
+      '/register?ajs_uid=old-user&ajs_uid=',
+      '/register?ajs_uid=old-user&ajs_uid',
+      '/register?ajs%5Fuid=old-user',
+    ])('releases events at the timeout when analytics.js will not identify anyone (%s)', async (url) => {
+      setUrl(url);
+      const service = createService(AuthnSegmentAnalyticsService);
+      global.analytics.ready = () => {};
+      const identifyPromise = service.identifyAnonymousUser();
+      jest.advanceTimersByTime(ANONYMOUS_IDENTIFY_TIMEOUT);
+      await identifyPromise;
+
+      expect(service.segmentInitialized).toBe(true);
     });
   });
 
@@ -317,5 +342,24 @@ describe('getQueryStringSegmentUserId', () => {
     expect(getQueryStringSegmentUserId()).toBeNull();
     setUrl('/register?ajs_uid=');
     expect(getQueryStringSegmentUserId()).toBeNull();
+  });
+
+  // Expected values follow analytics-next 1.84.3 core/query-string/index.ts.
+  it.each([
+    ['last value wins over an earlier empty one', '/register?ajs_uid=&ajs_uid=old-user', 'old-user'],
+    ['last value wins over an earlier id', '/register?ajs_uid=someone&ajs_uid=old-user', 'old-user'],
+    ['a later empty value wins', '/register?ajs_uid=old-user&ajs_uid=', null],
+    ['a later key with no value wins', '/register?ajs_uid=old-user&ajs_uid', null],
+    ['a percent-encoded key is not ajs_uid', '/register?ajs%5Fuid=old-user', null],
+    ['a percent-encoded key does not hide ajs_uid', '/register?ajs%5Fuid=&ajs_uid=old-user', 'old-user'],
+    ['a percent-encoded key after ajs_uid is ignored', '/register?ajs_uid=old-user&ajs%5Fuid=', 'old-user'],
+    ['the value is percent-decoded', '/register?ajs_uid=old%2Duser', 'old-user'],
+    ['+ in the value decodes to a space', '/register?ajs_uid=old+user', 'old user'],
+    ['a malformed value is kept as-is', '/register?ajs_uid=old%ZZuser', 'old%ZZuser'],
+    ['the value stops at a second =', '/register?ajs_uid=old-user=x', 'old-user'],
+    ['repeated keys in the hash', '/register#section?ajs_uid=&ajs_uid=old-user', 'old-user'],
+  ])('%s', (_, url, expected) => {
+    setUrl(url);
+    expect(getQueryStringSegmentUserId()).toBe(expected);
   });
 });

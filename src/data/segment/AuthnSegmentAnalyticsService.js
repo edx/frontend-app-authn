@@ -62,15 +62,42 @@ export const getStoredSegmentUserId = () => {
 };
 
 /**
- * Returns the user id passed as ?ajs_uid=, which analytics.js identifies (Segment's querystring
- * API) before replaying calls queued on the snippet stub. Like analytics.js, reads the hash's
- * query string when the URL has no search part.
+ * Returns the user id that analytics.js will identify from ?ajs_uid= (Segment's querystring API)
+ * before replaying calls queued on the snippet stub, or null when it will identify none.
+ *
+ * Parses the URL exactly as analytics-next 1.84.3 does (browser/index.ts getQueryString,
+ * core/query-string/index.ts queryString), because any difference lets a URL identity through
+ * unreset. URLSearchParams differs: it returns the first of repeated keys and decodes keys.
+ *  - the query string, or the hash's when there is none, normalised through an <a> element;
+ *  - keys are compared raw (ajs%5Fuid is not ajs_uid);
+ *  - for a repeated key, the last value wins;
+ *  - the value is the text between the first and second '=';
+ *  - values are decoded with '+' as a space, and kept as-is when malformed;
+ *  - an empty value identifies no one (frontend-platform loads Segment without a uid pattern).
  */
 export const getQueryStringSegmentUserId = () => {
   try {
     const { search, hash } = global.location;
-    const queryString = search || hash.replace(/(?=#).*(?=\?)/, '');
-    return new URLSearchParams(queryString).get('ajs_uid') || null;
+    const queryString = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '');
+    if (!queryString.includes('ajs_')) {
+      return null;
+    }
+    const link = document.createElement('a');
+    link.href = queryString;
+    const rawUserId = link.search.slice(1).split('&').reduce((userId, parameter) => {
+      const [key, value] = parameter.split('=');
+      return key === 'ajs_uid' ? value : userId;
+    }, undefined);
+    if (rawUserId === undefined) {
+      return null;
+    }
+    let userId;
+    try {
+      userId = decodeURIComponent(rawUserId.replace(/\+/g, ' '));
+    } catch (e) {
+      userId = rawUserId;
+    }
+    return userId || null;
   } catch (e) {
     return null;
   }
