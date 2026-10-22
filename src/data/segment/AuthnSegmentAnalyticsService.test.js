@@ -298,22 +298,27 @@ describe('getStoredSegmentUserId', () => {
     expect(getStoredSegmentUserId()).toBe('67890');
   });
 
+  // setupTest.js replaces window.localStorage with a plain object, so spy on it directly
+  // (Storage.prototype is never reached).
   it('falls back to the cookie when localStorage throws', () => {
-    jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+    const getItem = jest.spyOn(window.localStorage, 'getItem').mockImplementation(() => {
       throw new Error('SecurityError');
     });
     document.cookie = 'ajs_user_id=12345; path=/';
     expect(getStoredSegmentUserId()).toBe('12345');
+    expect(getItem).toHaveBeenCalledWith('ajs_user_id');
   });
 
   it('returns null when localStorage and cookies both throw', () => {
-    jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+    const getItem = jest.spyOn(window.localStorage, 'getItem').mockImplementation(() => {
       throw new Error('SecurityError');
     });
-    jest.spyOn(document, 'cookie', 'get').mockImplementation(() => {
+    const cookie = jest.spyOn(document, 'cookie', 'get').mockImplementation(() => {
       throw new Error('SecurityError');
     });
     expect(getStoredSegmentUserId()).toBeNull();
+    expect(getItem).toHaveBeenCalledWith('ajs_user_id');
+    expect(cookie).toHaveBeenCalled();
   });
 
   it('uses analytics.user() once analytics.js has loaded', () => {
