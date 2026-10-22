@@ -5,6 +5,27 @@ export const ANONYMOUS_IDENTIFY_TIMEOUT = 2000;
 export const STALE_USER_ID_TIMEOUT = 5000;
 
 const SEGMENT_USER_ID_KEY = 'ajs_user_id';
+// Legacy analytics.js cookie ({"id": ..., "traits": ...}). In analytics-next 1.84.3 the User
+// constructor restores its id, User.id() falls back to it, and User.reset() does not clear it
+// (core/user/index.ts).
+const SEGMENT_LEGACY_USER_KEY = 'ajs_user';
+
+const readCookie = (name) => {
+  const cookie = document.cookie.split('; ').find(c => c.startsWith(`${name}=`));
+  return cookie ? decodeURIComponent(cookie.slice(name.length + 1)) : null;
+};
+
+/**
+ * Removes a cookie for this host and every parent domain, since analytics.js sets its cookies on
+ * the top-level domain it can write to (e.g. .edx.org).
+ */
+const removeCookie = (name) => {
+  const labels = global.location.hostname.split('.');
+  const domains = labels.map((_, i) => labels.slice(i).join('.')).filter(domain => domain.includes('.'));
+  [null, ...domains].forEach((domain) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domain ? `; domain=${domain}` : ''}`;
+  });
+};
 
 /**
  * Parses a value persisted by analytics.js the same way analytics.js reads it back:
@@ -27,9 +48,28 @@ const parseStoredUserId = (raw) => {
 };
 
 /**
+ * Parses the legacy ajs_user cookie as User.id() reads it back: the object's id, or the value
+ * itself when it is not an object. Returns null when there is no id.
+ */
+const parseLegacyUserId = (raw) => {
+  if (raw === null || raw === '') {
+    return null;
+  }
+  let value;
+  try {
+    value = JSON.parse(raw);
+  } catch (e) {
+    value = raw;
+  }
+  const userId = value && typeof value === 'object' ? value.id : value;
+  return userId ? String(userId) : null;
+};
+
+/**
  * Returns the Segment user id persisted by analytics.js, even before analytics.js has loaded
  * (the snippet stub has no user() method). analytics.js stores it JSON-encoded in localStorage
- * and as a cookie. Storage access can throw (e.g. Safari private mode, blocked site data).
+ * and as a cookie, and restores it from the legacy ajs_user cookie. Storage access can throw
+ * (e.g. Safari private mode, blocked site data).
  */
 export const getStoredSegmentUserId = () => {
   if (typeof global.analytics?.user === 'function') {
@@ -50,15 +90,30 @@ export const getStoredSegmentUserId = () => {
   }
 
   try {
-    const cookie = document.cookie.split('; ').find(c => c.startsWith(`${SEGMENT_USER_ID_KEY}=`));
-    if (cookie) {
-      return parseStoredUserId(decodeURIComponent(cookie.slice(SEGMENT_USER_ID_KEY.length + 1)));
-    }
+    return parseStoredUserId(readCookie(SEGMENT_USER_ID_KEY))
+      || parseLegacyUserId(readCookie(SEGMENT_LEGACY_USER_KEY));
   } catch (e) {
     // Cookies unavailable.
   }
 
   return null;
+};
+
+/**
+ * Clears a previous user's identity once analytics.js is ready. reset() in analytics-next 1.84.3
+ * leaves the legacy ajs_user cookie, which User.id() falls back to, so that cookie is removed too.
+ * Returns whether the user id is now empty.
+ */
+const resetSegmentIdentity = () => {
+  global.analytics.reset();
+  if (global.analytics.user().id()) {
+    try {
+      removeCookie(SEGMENT_LEGACY_USER_KEY);
+    } catch (e) {
+      // Cookies unavailable; checked below.
+    }
+  }
+  return !global.analytics.user().id();
 };
 
 /**
@@ -126,9 +181,10 @@ const hasPreviousSegmentIdentity = () => !!(getStoredSegmentUserId() || getQuery
  * A previous user's id must be reset before any event is sent. reset() is never queued on the
  * stub: analytics.js replays queued calls grouped by method, so a track() queued earlier by
  * another script (e.g. a GTM tag) would put all track() calls ahead of the reset. Instead, when a
- * previous identity exists (a stored user id, or ?ajs_uid= which analytics.js applies before
- * replaying queued calls), we keep waiting for ready() (which resets), as the parent class does,
- * for at most STALE_USER_ID_TIMEOUT before disabling this service.
+ * previous identity exists (a stored user id, the legacy ajs_user cookie, or ?ajs_uid= which
+ * analytics.js applies before replaying queued calls), we keep waiting for ready() (which resets),
+ * as the parent class does, for at most STALE_USER_ID_TIMEOUT before disabling this service. After
+ * the reset the user id is checked again; if it can't be cleared, this service stays disabled.
  *
  * Delete this class once the timer is fixed upstream. Until then, re-check
  * SegmentAnalyticsService.identifyAnonymousUser on every @edx/frontend-platform upgrade, since
@@ -152,8 +208,9 @@ class AuthnSegmentAnalyticsService extends SegmentAnalyticsService {
         // Reset any user id left over from a previous authenticated session. This also runs
         // after the stale-identity fallback below has disabled this service, because other
         // scripts can still send events through window.analytics.
-        if (!areEventsReleased && global.analytics.user().id()) {
-          global.analytics.reset();
+        if (!areEventsReleased && global.analytics.user().id() && !resetSegmentIdentity()) {
+          // Never send this service's events under a previous user's id.
+          this.segmentInitialized = false;
         }
         this.hasIdentifyBeenCalled = true;
         resolve();

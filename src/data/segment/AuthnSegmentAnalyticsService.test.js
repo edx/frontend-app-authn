@@ -20,6 +20,37 @@ const queuedMethods = () => global.analytics.map(([method]) => method);
 
 const clearUserIdCookie = () => {
   document.cookie = 'ajs_user_id=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+  document.cookie = 'ajs_user=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+};
+
+const setLegacyUserCookie = (value) => {
+  document.cookie = `ajs_user=${encodeURIComponent(JSON.stringify(value))}; path=/`;
+};
+
+const readLegacyUserId = () => {
+  const cookie = document.cookie.split('; ').find(c => c.startsWith('ajs_user='));
+  if (!cookie) {
+    return null;
+  }
+  const value = JSON.parse(decodeURIComponent(cookie.slice('ajs_user='.length)));
+  return value && typeof value === 'object' ? value.id : value;
+};
+
+/**
+ * Loaded analytics.js, mirroring analytics-next 1.84.3's User (core/user/index.ts): the
+ * constructor restores the legacy ajs_user cookie's id, id() falls back to that cookie, and
+ * reset() does not clear it. Records the user id each page() call is sent under.
+ */
+const loadAnalytics = ({ userId = null } = {}) => {
+  let storedUserId = readLegacyUserId() || userId;
+  const id = () => storedUserId || readLegacyUserId() || null;
+  const sentPageUserIds = [];
+  Object.assign(global.analytics, {
+    user: () => ({ id }),
+    reset: jest.fn(() => { storedUserId = null; }),
+    page: () => { sentPageUserIds.push(id()); },
+  });
+  return sentPageUserIds;
 };
 
 describe('AuthnSegmentAnalyticsService', () => {
@@ -74,14 +105,14 @@ describe('AuthnSegmentAnalyticsService', () => {
 
   it('resolves when analytics.js is ready and resets a stale user id', async () => {
     const service = createService(AuthnSegmentAnalyticsService);
-    const reset = jest.fn();
+    loadAnalytics({ userId: 'stale-user' });
     global.analytics.ready = (callback) => callback();
-    global.analytics.user = () => ({ id: () => 'stale-user' });
-    global.analytics.reset = reset;
 
     await service.identifyAnonymousUser();
 
-    expect(reset).toHaveBeenCalled();
+    expect(global.analytics.reset).toHaveBeenCalled();
+    expect(global.analytics.user().id()).toBeNull();
+    expect(service.segmentInitialized).toBe(true);
     expect(service.hasIdentifyBeenCalled).toBe(true);
   });
 
@@ -108,13 +139,12 @@ describe('AuthnSegmentAnalyticsService', () => {
     });
 
     it('resets and resolves when analytics.js becomes ready', async () => {
-      const reset = jest.fn();
-      global.analytics.user = () => ({ id: () => '12345' });
-      global.analytics.reset = reset;
+      loadAnalytics({ userId: '12345' });
       readyCallback();
       await Promise.resolve();
 
-      expect(reset).toHaveBeenCalled();
+      expect(global.analytics.reset).toHaveBeenCalled();
+      expect(global.analytics.user().id()).toBeNull();
       expect(resolved).toBe(true);
       expect(service.segmentInitialized).toBe(true);
     });
@@ -134,13 +164,64 @@ describe('AuthnSegmentAnalyticsService', () => {
       expect(service.segmentInitialized).toBe(false);
 
       // Other scripts (e.g. the Xpert chatbot) still send through window.analytics.
-      const reset = jest.fn();
-      global.analytics.user = () => ({ id: () => '12345' });
-      global.analytics.reset = reset;
+      loadAnalytics({ userId: '12345' });
       readyCallback();
 
-      expect(reset).toHaveBeenCalled();
+      expect(global.analytics.reset).toHaveBeenCalled();
+      expect(global.analytics.user().id()).toBeNull();
       expect(service.segmentInitialized).toBe(false);
+    });
+  });
+
+  describe('when only the legacy ajs_user cookie holds a previous user and analytics.js is slow', () => {
+    let readyCallback;
+    let service;
+    let resolved;
+
+    beforeEach(() => {
+      setLegacyUserCookie({ id: 'old-user' });
+      service = createService(AuthnSegmentAnalyticsService);
+      global.analytics.ready = (callback) => { readyCallback = callback; };
+      resolved = false;
+      service.identifyAnonymousUser().then(() => { resolved = true; });
+      jest.advanceTimersByTime(ANONYMOUS_IDENTIFY_TIMEOUT);
+    });
+
+    it('does not release events at the timeout', async () => {
+      await Promise.resolve();
+      expect(resolved).toBe(false);
+    });
+
+    it('clears the restored identity that reset() leaves behind, then sends events anonymously', async () => {
+      // analytics.js restores old-user from the legacy cookie when it loads.
+      const sentPageUserIds = loadAnalytics();
+      expect(global.analytics.user().id()).toBe('old-user');
+
+      readyCallback();
+      await Promise.resolve();
+
+      expect(global.analytics.reset).toHaveBeenCalled();
+      expect(readLegacyUserId()).toBeNull();
+      expect(global.analytics.user().id()).toBeNull();
+      expect(resolved).toBe(true);
+      expect(service.segmentInitialized).toBe(true);
+
+      service.sendPageEvent('login_and_registration', 'register', { app_name: 'authn_mfe' });
+      expect(sentPageUserIds).toEqual([null]);
+    });
+
+    it('keeps this service disabled when the identity cannot be cleared', async () => {
+      const sentPageUserIds = loadAnalytics();
+      // e.g. a cookie this page cannot remove.
+      global.analytics.user = () => ({ id: () => 'old-user' });
+
+      readyCallback();
+      await Promise.resolve();
+
+      expect(resolved).toBe(true);
+      expect(service.segmentInitialized).toBe(false);
+      service.sendPageEvent('login_and_registration', 'register', { app_name: 'authn_mfe' });
+      expect(sentPageUserIds).toEqual([]);
     });
   });
 
@@ -324,6 +405,24 @@ describe('getStoredSegmentUserId', () => {
   it('uses analytics.user() once analytics.js has loaded', () => {
     global.analytics = { user: () => ({ id: () => 'loaded-user' }) };
     expect(getStoredSegmentUserId()).toBe('loaded-user');
+  });
+
+  // analytics-next 1.84.3 User.id() falls back to the legacy cookie: the object's id, else the value.
+  it.each([
+    ['an object with an id', { id: 'old-user', traits: { name: 'Old' } }, 'old-user'],
+    ['a numeric id', { id: 42 }, '42'],
+    ['a bare string', 'old-user', 'old-user'],
+    ['an object without an id', { traits: {} }, null],
+    ['an object with a null id', { id: null }, null],
+  ])('reads the legacy ajs_user cookie holding %s', (_, value, expected) => {
+    setLegacyUserCookie(value);
+    expect(getStoredSegmentUserId()).toBe(expected);
+  });
+
+  it('falls back to the legacy cookie when ajs_user_id is "null"', () => {
+    document.cookie = 'ajs_user_id=null; path=/';
+    setLegacyUserCookie({ id: 'old-user' });
+    expect(getStoredSegmentUserId()).toBe('old-user');
   });
 });
 
